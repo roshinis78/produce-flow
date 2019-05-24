@@ -1,0 +1,7 @@
+# NODE.JS #
+###########
+node_modules
+
+# JUPYTER NOTEBOOK #
+####################
+.ipynb_checkpoints

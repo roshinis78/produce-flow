@@ -1,0 +1,30 @@
+{
+  "name": "produce-flow",
+  "version": "1.0.0",
+  "description": "Analyze global flow of produce and identify environmental hazards.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npm run lite",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lite": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roshinis78/produce-flow.git"
+  },
+  "author": "Roshini Saravanakumar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/roshinis78/produce-flow/issues"
+  },
+  "homepage": "https://github.com/roshinis78/produce-flow#readme",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "d3": "^5.9.2",
+    "jquery": "^3.4.1",
+    "popper.js": "^1.15.0"
+  },
+  "devDependencies": {
+    "lite-server": "^2.5.3"
+  }
+}
