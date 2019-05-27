@@ -1,5 +1,8 @@
 /* My styles will be in here :) */
-.jumbotron {
-  background: skyblue;
-  color: floralwhite;
+.navbar-dark {
+  background: #00B0FF;
+}
+
+body {
+  padding: 100px;
 }

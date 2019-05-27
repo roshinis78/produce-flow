@@ -8,16 +8,31 @@
   <meta name='viewport' contents='width=device-width, initial-scale=1, shrink-to-fit=no'>
   <link rel='stylesheet' href='node_modules/bootstrap/dist/css/bootstrap.min.css'>
 
+  <!-- Font Awesome icon font pack -->
+  <link rel='stylesheet' href='node_modules/font-awesome/css/font-awesome.css'>
+
+  <!-- Bootstrap social -->
+  <link rel='stylesheet' href='node_modules/bootstrap-social/bootstrap-social.css'>
+
   <!-- My custom styles -->
-  <link rel="stylesheet" href='styles.css'>
+  <link rel='stylesheet' href='styles.css'>
 </head>
 
 <body>
-  <header class='jumbotron'>
-    <h1>Produce Flow Analysis</h1>
-  </header>
+  <!-- bootstrap navbar repurposed as header -->
+  <nav class='navbar navbar-dark navbar-expand-sm fixed-top'>
+    <div class='container'>
+      <a class='navbar-brand' href='#'>Produce Flow Analysis</a>
+      <ul class='navbar-nav mr-auto'>
+        <li class='nav-item'>
+          <a class='nav-link' href='#'>By Roshini Saravanakumar <span class='fa fa-github fa-lg'></span></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
   <div class='container'>
-    <div id='chart'>
+    <div class='row' id='chart'>
       <!-- Visualization will go in here -->
     </div>
   </div>
@@ -30,8 +45,7 @@
   <!-- D3 -->
   <script src='node_modules/d3/dist/d3.min.js'></script>
 
-  <!-- Visualization code -->
-  <script src='visualization.js'></script>
+  <script src="bundle.js"></script>
 </body>
 
 </html>
