@@ -1,5 +1,4 @@
-var Popper = require('popper.js')
-var locationLookup = {}
+var locationLookup = {} // global lookup table used to look up the location of the centroid of a country
 
 $(function () {
   // intialize the location lookup table
@@ -14,7 +13,7 @@ $(function () {
   d3.csv('data/avacados_2012_top10_export.csv').then(function (data) {
     console.log(data); // debugging
     visualize(data);
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip(); // generate all tooltips
   });
 });
 
@@ -24,7 +23,7 @@ var visualize = function (data) {
   // Boilerplate:
   var margin = { top: 0, right: 0, bottom: 50, left: 60 };
   var width = 1100 - margin.left - margin.right;
-  var height = 600 - margin.top - margin.bottom;
+  var height = 540 - margin.top - margin.bottom;
 
   var svg = d3.select('#chart')
     .append('svg')
@@ -37,7 +36,7 @@ var visualize = function (data) {
 
   // world map
   var worldGeoJSON = require('./data/countries.json')
-  var projection = d3.geoEquirectangular()
+  var projection = d3.geoMercator()
   var pathGenerator = d3.geoPath(projection)
   var mapPalette = ['#a1c9f4',
     '#ffb482',
@@ -67,35 +66,6 @@ var visualize = function (data) {
       return mapPalette[Math.floor(Math.random() * mapPalette.length)]
     })
 
-  var map = {
-    top: 0,
-    right: 960,
-    left: 0,
-    bottom: 489
-  }
-
-  // axes
-  var latitudeScale = d3
-    .scaleLinear()
-    .domain([-90, 90])
-    .range([map.bottom, map.top])
-  var latitudeAxis = d3.axisLeft(latitudeScale)
-
-  var longitudeScale = d3
-    .scaleLinear()
-    .domain([-180, 180])
-    .range([map.left, map.right])
-  var longitudeAxis = d3.axisBottom(longitudeScale)
-
-  svg
-    .append('g')
-    .call(latitudeAxis)
-
-  svg
-    .append('g')
-    .call(longitudeAxis)
-    .attr('transform', 'translate(0,' + map.bottom + ')')
-
   // read dataset, add a circle for each element
   svg
     .selectAll('exercise')
@@ -103,26 +73,26 @@ var visualize = function (data) {
     .enter()
     .append('circle')
     .attr('r', function (d, i) {
+      // create tooltip
       var popper = document.createElement('a')
       new Popper(this, popper, {
         placement: 'left',
       })
-      popper.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x"></i><i class="fa fa-inverse fa-stack-1x">'
-        + (i + 1) + '</i></span>' + d['Country']
+      popper.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x fa-lg"></i><i class="fa fa-inverse fa-stack-1x number-style">'
+        + (i + 1) + '</i></span>' + d['Country'] + '&nbsp;'
       popper.setAttribute('data-toggle', 'tooltip')
       popper.setAttribute('data-placement', 'top')
       popper.setAttribute('title', 'Exported ' + d['Export Quantity'] + ' avacados')
       document.body.appendChild(popper)
+
+      // return radius
       return 2
     })
     .attr('cx', function (d, i) {
-      return longitudeScale(locationLookup[d['Country']].longitude)
+      return (projection([locationLookup[d['Country']].longitude, locationLookup[d['Country']].latitude]))[0] // longitude projected
     })
     .attr('cy', function (d, i) {
-      return latitudeScale(locationLookup[d['Country']].latitude)
+      return (projection([locationLookup[d['Country']].longitude, locationLookup[d['Country']].latitude]))[1] // latitude projected
     })
     .attr('class', viewClass)
-
-  // tooltips
-
 };
