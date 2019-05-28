@@ -14,9 +14,19 @@ body {
 
 .navbar-nav {
   padding-top: 1px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.navbar-brand {
+  margin-right: 10px;
 }
 
 .number-style {
   font-family: Calibri;
   font-size: 16px;
+}
+
+.navbar .row {
+  justify-content: space-between;
 }

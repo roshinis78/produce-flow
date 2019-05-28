@@ -20,11 +20,22 @@
   <nav class='navbar navbar-dark navbar-expand-sm fixed-top'>
     <div class='container'>
       <a class='navbar-brand' href='#'>Produce Flow Analysis</a>
-      <ul class='navbar-nav mr-auto'>
-        <li class='nav-item'>
+      <ul class='navbar-nav row'>
+        <li class='nav-item col-sm-4'>
           <a class='nav-link' href='https://github.com/roshinis78' target='_blank'>By Roshini Saravanakumar
             <span class='fa fa-github fa-lg'></span>
           </a>
+        </li>
+        <li class='nav-item dropdown col-sm-4'>
+          <button class='btn btn-light dropdown-toggle' type='button' id='viewMenuButton' data-toggle='dropdown'
+            aria-haspopup="true" aria-expanded="false">
+            Select view
+          </button>
+          <ul class='dropdown-menu' aria-labelledby='viewMenuButton'>
+            <li class='dropdown-item'>Top 10 Exporters of Avacado in 2012</li>
+            <li class='dropdown-item'>Top 10 Importers of Avacado in 2012</li>
+            <li class='dropdown-item'>Top 10 Overall Stats</li>
+          </ul>
         </li>
       </ul>
     </div>
