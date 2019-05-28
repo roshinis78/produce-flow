@@ -14,12 +14,9 @@ $(function () {
   d3.csv('data/avacados_2012_top10_export.csv').then(function (data) {
     console.log(data); // debugging
     visualize(data);
+    $('[data-toggle="tooltip"]').tooltip();
   });
 });
-
-$(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-})
 
 var viewClass = 'avacados_2012_top10_export'
 
@@ -106,10 +103,16 @@ var visualize = function (data) {
     .enter()
     .append('circle')
     .attr('r', function (d, i) {
-      var tooltip = new Tooltip(this, {
-        title: "Hello roshini :)",
-        placement: "bottom"
+      var popper = document.createElement('a')
+      new Popper(this, popper, {
+        placement: 'left',
       })
+      popper.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x"></i><i class="fa fa-inverse fa-stack-1x">'
+        + (i + 1) + '</i></span>' + d['Country']
+      popper.setAttribute('data-toggle', 'tooltip')
+      popper.setAttribute('data-placement', 'top')
+      popper.setAttribute('title', 'Exported ' + d['Export Quantity'] + ' avacados')
+      document.body.appendChild(popper)
       return 2
     })
     .attr('cx', function (d, i) {
