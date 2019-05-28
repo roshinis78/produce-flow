@@ -6,3 +6,12 @@
 body {
   padding: 100px;
 }
+
+.tooltip-background, .tooltip-arrow {
+  stroke: white; 
+  fill: rgba(245, 245, 245, 0.747);
+}
+
+.navbar-nav {
+  padding-top: 1px;
+}
