@@ -1,3 +1,11 @@
+// function to change the view class
+var viewClass = 'avacados_2012_top10_export'
+function changeView() {
+  var view = 0
+  viewClass = { 0: 'avacados_2012_top10_export', 1: 'avacados_2012_top10_import', 2: 'top10_overall' }[view]
+  console.log(viewClass)
+}
+
 var locationLookup = {} // global lookup table used to look up the location of the centroid of a country
 
 $(function () {
@@ -17,7 +25,7 @@ $(function () {
   });
 });
 
-var viewClass = 'avacados_2012_top10_export'
+
 
 var visualize = function (data) {
   // Boilerplate:
