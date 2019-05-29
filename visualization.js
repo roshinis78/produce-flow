@@ -11,8 +11,6 @@ var locationLookup = {} // global lookup table used to look up the location of t
 var produce = 'Avocados'
 var year = '2004'
 
-var codes = null
-
 $(function () {
   // intialize the location lookup table
   d3.csv('data/countries_lookup.csv').then(function (data) {
@@ -23,9 +21,33 @@ $(function () {
     console.log(locationLookup)
   });
 
+  // fill the produce select element with produce options
+  d3.csv('data/produce.csv').then(function (data) {
+    console.log('Printing produce set...')
+    console.log(data)
+    data.forEach(function (produce) {
+      var selectMenu = document.getElementById('produce-select')
+      var option = document.createElement('option')
+      option.setAttribute('value', produce['Produce'])
+      option.innerHTML = produce['Produce']
+      selectMenu.appendChild(option)
+    })
+  });
+
+  // fill the year select element with year options
+  d3.csv('data/years.csv').then(function (data) {
+    console.log('Printing year set...')
+    console.log(data)
+    data.forEach(function (year) {
+      var selectMenu = document.getElementById('year-select')
+      var option = document.createElement('option')
+      option.setAttribute('value', year['Year'])
+      option.innerHTML = year['Year']
+      selectMenu.appendChild(option)
+    })
+  });
+
   d3.csv('data/relevant_data.csv').then(function (data) {
-    // save their country codes for later lookups
-    codes = new Set(data.map(row => row['Country']))
     // get the top 10 exporters of a produce from a specific year
     data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year)))
     data.sort(function (a, b) { return b['Export Quantity'] - a['Export Quantity'] })
@@ -34,8 +56,6 @@ $(function () {
     // debugging
     console.log('Printing Top 10 Exporters of ' + produce + ' in ' + year + '...')
     console.log(data);
-    console.log('Printing their country codes...')
-    console.log(codes);
 
     // Set the header of the stats card
     header = document.getElementById('stats-header')
@@ -86,9 +106,6 @@ var visualize = function (data) {
     .attr('d', pathGenerator) // d attribute defines the shape of the path
     .style('stroke', 'white')
     .style('fill', function (d, i) {
-      if (!codes.has(d.properties['ADMIN'])) {
-        console.log('NOT FOUND: ' + d.properties['ADMIN'])
-      }
       // randomly select color from palette
       return mapPalette[Math.floor(Math.random() * mapPalette.length)]
     })

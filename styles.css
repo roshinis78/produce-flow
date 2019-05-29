@@ -26,11 +26,8 @@
   justify-content: space-between;
 }
 
-/* For medium sized screens and larger: */
-@media (min-width: 768px) {
-}
-
-.list-group-item {
+/* Halve the padding for list items contained within the summary card */
+.card .list-group-item { 
   padding: 6px 10px;
 }
 

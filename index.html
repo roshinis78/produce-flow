@@ -26,20 +26,46 @@
             <span class='fa fa-github fa-lg'></span>
           </a>
         </li>
-        <li class='nav-item'>
-          <button class='btn btn-light' type='button' data-toggle='collapse' data-target='#stats' aria-expanded='true'>
-            Toggle Summary
-          </button>
-        </li>
       </ul>
     </div>
   </nav>
 
   <div class='container'>
+    <h3 class='mt-2 mb-3'>Worldview: Top Importers and Exporters</h3>
+
+    <form class='form-inline'>
+      <select class='form-control'>
+        <option value='Importers'>Importers</option>
+        <option value='Importers'>Exporters</option>
+      </select>
+
+      <label for='produce-select'>&nbsp;&nbsp;of&nbsp;&nbsp;</label>
+      <select class='form-control' id='produce-select'>
+        <!-- Will be filled by js with set of produce -->
+      </select>
+
+      <label for='year-select'>&nbsp;&nbsp;in&nbsp;&nbsp;</label>
+      <select class='form-control' id='year-select'>
+        <!-- Will be filled by js with set of years -->
+      </select>
+
+      <button class='btn btn-dark ml-2' type='submit'><i class='fa fa-search'></i> Query</button>
+
+      <button class='ml-auto btn btn-light' type='button' data-toggle='collapse' data-target='#stats'
+        aria-expanded='true'>
+        Toggle Summary
+      </button>
+    </form>
+
+    <hr>
+
+    <!-- Content -->
     <div class='row'>
       <div class='col-12 col-md-6' id='chart'>
         <!-- Visualization will go in here -->
       </div>
+
+      <!-- Summary card -->
       <div class='col-12 col-md'>
         <div class='card collapse show' id='stats'>
           <h5 class='card-header' id='stats-header'></h5>
@@ -48,6 +74,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- Bootstrap JS components -->
