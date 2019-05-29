@@ -13,9 +13,13 @@
   margin-right: 10px;
 }
 
+.navbar {
+  border-bottom: 1px solid white;
+}
+
 .number-style {
   font-family: Calibri;
-  font-size: 15px;
+  font-size: 19px;
 }
 
 .navbar .row {
@@ -26,24 +30,27 @@
 @media (min-width: 768px) {
 }
 
-.card-header, .list-group-item {
+.list-group-item {
   padding: 6px 10px;
 }
 
 .card {
   z-index:2000;
+  font-size: 13px;
+}
+
+.card .country-name {
+  font-size: 15px;
 }
 
 .dropdown-menu {
   z-index: 3000;
 }
 
-.viz {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-}
-
 .my-tooltip:hover {
   z-index: 2000;
 } 
+
+body {
+  padding-top: 57px;
+}

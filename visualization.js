@@ -8,7 +8,7 @@ function changeView() {
 
 var locationLookup = {} // global lookup table used to look up the location of the centroid of a country
 
-var produce = 'Potatoes'
+var produce = 'Avocados'
 var year = '2004'
 
 var codes = null
@@ -48,8 +48,8 @@ $(function () {
 });
 
 var visualize = function (data) {
-  const width = 855;
-  const height = 530;
+  const width = 1100;
+  const height = 600;
 
   var svg = d3.select('#chart')
     .append('svg')
@@ -60,23 +60,23 @@ var visualize = function (data) {
   // Visualization Code:
   // world map
   var worldGeoJSON = require('./data/countries.json')
-  var projection = d3.geoMercator().fitWidth(width, worldGeoJSON)
+  var projection = d3.geoMercator().fitWidth(1100, worldGeoJSON).translate([550, 280])
   var pathGenerator = d3.geoPath(projection)
-  var mapPalette = ['#d7dfc0',
-    '#c2d6af',
-    '#aecfa2',
-    '#98c698',
-    '#82bc92',
-    '#6fb08f',
-    '#5fa38e',
-    '#53958d',
-    '#4a848b',
-    '#437286',
-    '#3f5f7f',
-    '#3c4d73',
-    '#393d65',
-    '#342d53',
-    '#2c1e3e']
+  var mapPalette = ['#a1c9f4',
+    '#ffb482',
+    '#8de5a1',
+    '#ff9f9b',
+    '#d0bbff',
+    '#debb9b',
+    '#fab0e4',
+    '#cfcfcf',
+    '#fffea3',
+    '#b9f2f0',
+    '#a1c9f4',
+    '#ffb482',
+    '#8de5a1',
+    '#ff9f9b',
+    '#d0bbff']
 
   svg
     .selectAll('countries')
@@ -86,13 +86,11 @@ var visualize = function (data) {
     .attr('d', pathGenerator) // d attribute defines the shape of the path
     .style('stroke', 'white')
     .style('fill', function (d, i) {
-      // randomly select color from palette
-      // return mapPalette[Math.floor(Math.random() * mapPalette.length)]
-      //console.log(d)
       if (!codes.has(d.properties['ADMIN'])) {
         console.log('NOT FOUND: ' + d.properties['ADMIN'])
       }
-      return 'red'
+      // randomly select color from palette
+      return mapPalette[Math.floor(Math.random() * mapPalette.length)]
     })
 
   // read dataset, add a circle for each element
@@ -105,9 +103,9 @@ var visualize = function (data) {
       // create tooltip
       var popper = document.createElement('a')
       new Popper(this, popper, {
-        placement: 'auto-end',
+        placement: 'right',
       })
-      popper.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x"></i><i class="fa fa-inverse fa-stack-1x number-style">'
+      popper.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x fa-lg"></i><i class="fa fa-inverse fa-stack-1x number-style">'
         + (i + 1) + '</i></span>'
       popper.setAttribute('data-toggle', 'tooltip')
       popper.setAttribute('data-placement', 'left')
@@ -116,12 +114,17 @@ var visualize = function (data) {
       document.body.appendChild(popper)
 
       // create a top 10 list of exporters
+      var listElt = document.createElement('li')
+      listElt.setAttribute('class', 'list-group-item')
+      listElt.innerHTML =
+        '<span class="fa-stack">' +
+        '<i class="fa fa-square fa-stack-2x"></i>' +
+        '<i class="fa fa-inverse fa-stack-1x number-style">' + (i + 1) + '</i></span>' + ' ' +
+        '<strong class="country-name">' + d['Country'] + '</strong>' +
+        ' Exported ' + d['Export Quantity'] + ' ' + produce.toLowerCase()
+
       var top10 = document.getElementById('stats-body')
-      var entry = document.createElement('li')
-      entry.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x fa-lg"></i><i class="fa fa-inverse fa-stack-1x number-style">'
-        + (i + 1) + '</i></span>' + ' ' + d['Country'] + ' exported ' + parseInt(d['Export Quantity']) + ' ' + produce.toLowerCase()
-      entry.setAttribute('class', 'list-group-item')
-      top10.appendChild(entry)
+      top10.appendChild(listElt)
 
       // return radius
       return 2
