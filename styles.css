@@ -15,7 +15,7 @@
 
 .number-style {
   font-family: Calibri;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .navbar .row {
@@ -34,8 +34,16 @@
   z-index:2000;
 }
 
+.dropdown-menu {
+  z-index: 3000;
+}
+
 .viz {
   width: 100%;
   display: flex;
   flex-direction: row;
 }
+
+.my-tooltip:hover {
+  z-index: 2000;
+} 
