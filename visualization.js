@@ -49,7 +49,7 @@ $(function () {
 
 var visualize = function (data) {
   const width = 1100;
-  const height = 600;
+  const height = 540;
 
   var svg = d3.select('#chart')
     .append('svg')
@@ -127,7 +127,7 @@ var visualize = function (data) {
       top10.appendChild(listElt)
 
       // return radius
-      return 2
+      return 3
     })
     .attr('cx', function (d, i) {
       return (projection([locationLookup[d['Country']].longitude, locationLookup[d['Country']].latitude]))[0] // longitude projected
