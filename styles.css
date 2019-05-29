@@ -3,15 +3,6 @@
   background: #00B0FF;
 }
 
-body {
-  padding: 57px;
-}
-
-.tooltip-background, .tooltip-arrow {
-  stroke: white; 
-  fill: rgba(245, 245, 245, 0.747);
-}
-
 .navbar-nav {
   padding-top: 1px;
   width: 100%;
@@ -29,4 +20,22 @@ body {
 
 .navbar .row {
   justify-content: space-between;
+}
+
+/* For medium sized screens and larger: */
+@media (min-width: 768px) {
+}
+
+.card-header, .list-group-item {
+  padding: 6px 10px;
+}
+
+.card {
+  z-index:2000;
+}
+
+.viz {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
 }

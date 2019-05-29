@@ -20,6 +20,8 @@ $(function () {
 
   d3.csv('data/avacados_2012_top10_export.csv').then(function (data) {
     console.log(data); // debugging
+    header = document.getElementById('stats-header')
+    header.innerHTML = 'Top 10 Exporters of Avacados in 2012'
     visualize(data);
     $('[data-toggle="tooltip"]').tooltip(); // generate all tooltips
   });
@@ -28,23 +30,19 @@ $(function () {
 
 
 var visualize = function (data) {
-  // Boilerplate:
-  var margin = { top: 0, right: 0, bottom: 50, left: 60 };
-  var width = 1100 - margin.left - margin.right;
-  var height = 540 - margin.top - margin.bottom;
+  const width = 855;
+  const height = 530;
 
   var svg = d3.select('#chart')
     .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
+    .attr('width', width)
+    .attr('height', height)
     .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
   // Visualization Code:
-
   // world map
   var worldGeoJSON = require('./data/countries.json')
-  var projection = d3.geoMercator()
+  var projection = d3.geoMercator().fitWidth(width, worldGeoJSON)
   var pathGenerator = d3.geoPath(projection)
   var mapPalette = ['#a1c9f4',
     '#ffb482',
@@ -87,11 +85,19 @@ var visualize = function (data) {
         placement: 'left',
       })
       popper.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x fa-lg"></i><i class="fa fa-inverse fa-stack-1x number-style">'
-        + (i + 1) + '</i></span>' + d['Country'] + '&nbsp;'
+        + (i + 1) + '</i></span>'
       popper.setAttribute('data-toggle', 'tooltip')
-      popper.setAttribute('data-placement', 'top')
-      popper.setAttribute('title', 'Exported ' + d['Export Quantity'] + ' avacados')
+      popper.setAttribute('data-placement', 'left')
+      popper.setAttribute('title', d['Country'] + ' exported ' + parseInt(d['Export Quantity']) + ' avacados')
       document.body.appendChild(popper)
+
+      // create a top 10 list of exporters
+      var top10 = document.getElementById('stats-body')
+      var entry = document.createElement('li')
+      entry.innerHTML = '<span class="fa-stack"><i class="fa fa-square fa-stack-1x fa-lg"></i><i class="fa fa-inverse fa-stack-1x number-style">'
+        + (i + 1) + '</i></span>' + ' ' + d['Country'] + ' exported ' + parseInt(d['Export Quantity']) + ' avacados'
+      entry.setAttribute('class', 'list-group-item')
+      top10.appendChild(entry)
 
       // return radius
       return 2

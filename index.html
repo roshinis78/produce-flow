@@ -17,7 +17,7 @@
 
 <body>
   <!-- bootstrap navbar repurposed as header -->
-  <nav class='navbar navbar-dark navbar-expand-sm fixed-top'>
+  <nav class='navbar navbar-dark navbar-expand-sm'>
     <div class='container'>
       <a class='navbar-brand' href='#'>Produce Flow Analysis</a>
       <ul class='navbar-nav row'>
@@ -41,8 +41,15 @@
     </div>
   </nav>
 
-  <div class='container'>
-    <div class='row' id='chart'>
+  <div class='viz'>
+    <div class='col-12 col-md-4 pl-0 pr-0 order-md-last'>
+      <div class='card'>
+        <h5 class='card-header' id='stats-header'></h5>
+        <ul class='list-group' id='stats-body'>
+        </ul>
+      </div>
+    </div>
+    <div class='col-12 col-md-8 pl-0 pr-0 order-md-first' id='chart'>
       <!-- Visualization will go in here -->
     </div>
   </div>
