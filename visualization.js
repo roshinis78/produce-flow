@@ -8,16 +8,22 @@ var fulfillmentValue = null
 var type = 'Import' // 'Import', 'Export', 'Production'
 var produce = 'Avocados'
 var year = '2012'
+
+// called whenever the user submits a query to update the viz
 function updateViz() {
-  type = document.getElementById('role-select').value
-  console.log('Updated type to ' + type)
+  var newType = document.getElementById('role-select').value
+  var newProduce = document.getElementById('produce-select').value
+  var newYear = document.getElementById('year-select').value
 
-  produce = document.getElementById('produce-select').value
-  console.log('Updated produce to ' + produce)
+  // only update when the query has changed
+  if (newType == type && newProduce == produce && newYear == year) {
+    console.log('No update necessary!')
+    return
+  }
 
-  year = document.getElementById('year-select').value
-  console.log('Updated year to ' + year)
-
+  type = newType
+  produce = newProduce
+  year = newYear
   drawViz(fulfillmentValue)
   console.log('Viz redrawn!')
 }
@@ -40,11 +46,17 @@ $(function () {
   d3.csv('data/produce.csv').then(function (data) {
     console.log('Printing produce set...')
     console.log(data)
-    data.forEach(function (produce) {
+    data.forEach(function (set) {
       var selectMenu = document.getElementById('produce-select')
       var option = document.createElement('option')
-      option.setAttribute('value', produce['Produce'])
-      option.innerHTML = produce['Produce']
+      option.setAttribute('value', set['Produce'])
+      option.innerHTML = set['Produce']
+
+      // set default produce selection
+      if (set['Produce'] == produce) {
+        option.selected = true;
+      }
+
       selectMenu.appendChild(option)
     })
   });
@@ -53,11 +65,17 @@ $(function () {
   d3.csv('data/years.csv').then(function (data) {
     console.log('Printing year set...')
     console.log(data)
-    data.forEach(function (year) {
+    data.forEach(function (set) {
       var selectMenu = document.getElementById('year-select')
       var option = document.createElement('option')
-      option.setAttribute('value', year['Year'])
-      option.innerHTML = year['Year']
+      option.setAttribute('value', set['Year'])
+      option.innerHTML = set['Year']
+
+      // set default year selection
+      if (set['Year'] == year) {
+        option.selected = true;
+      }
+
       selectMenu.appendChild(option)
     })
   });
