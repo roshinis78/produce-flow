@@ -1,10 +1,32 @@
-var locationLookup = {} // global lookup table used to look up the location of the centroid of a country
+// global lookup table used to look up the location of the centroid of a country
+var locationLookup = {}
+
+// value resulting from a fulfilled promise from the completion of d3.csv('data/relevant_data.csv)
+// basically the csv that is read as an object
+var fulfillmentValue = null
 
 var type = 'Import' // 'Import', 'Export', 'Production'
 var produce = 'Avocados'
 var year = '2012'
+function updateViz() {
+  type = document.getElementById('role-select').value
+  console.log('Updated type to ' + type)
+
+  produce = document.getElementById('produce-select').value
+  console.log('Updated produce to ' + produce)
+
+  year = document.getElementById('year-select').value
+  console.log('Updated year to ' + year)
+
+  drawViz(fulfillmentValue)
+  console.log('Viz redrawn!')
+}
 
 $(function () {
+  // Add event listener so we can update type, produce and year according to the user's query
+  queryButton = document.getElementById('query-button')
+  queryButton.addEventListener('click', updateViz)
+
   // intialize the location lookup table
   d3.csv('data/countries_lookup.csv').then(function (data) {
     data.forEach(function (country, index) {
@@ -40,50 +62,69 @@ $(function () {
     })
   });
 
-  // visualize!
+  // request to read the csv and save the read data for future redraws
   d3.csv('data/relevant_data.csv').then(function (data) {
-    // role of country in relation to the produce
-    var countryRole = {
-      'Import': ' Importers of ',
-      'Export': ' Exporters of ',
-      'Production': ' Producers of '
-    }[type]
+    fulfillmentValue = data
+    console.log('Printing fulfillment value of request to read relevanta_data.csv...')
+    console.log(fulfillmentValue)
 
-    var topHowMany = 10
-
-    // get the top 10 (ideally) importers/exporters/producers of a produce from a specific year
-    data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year)))
-    data.sort(function (a, b) { return b[type + ' Quantity'] - a[type + ' Quantity'] })
-    if (data.length < 10) {
-      topHowMany = data.length
-    }
-    data = data.slice(0, topHowMany)
-
-    // nitty gritty grammar details for single top country ^^;
-    if (topHowMany == 1) {
-      topHowMany = ''
-      countryRole = {
-        'Import': ' Importer of ',
-        'Export': ' Exporter of ',
-        'Production': ' Producer of '
-      }[type]
-    }
-
-    // debugging
-    console.log('Printing Top ' + topHowMany + countryRole + produce + ' in ' + year + '...')
-    console.log(data);
-
-    // set the header of the stats card
-    header = document.getElementById('stats-header')
-    header.innerHTML = 'Top ' + topHowMany + countryRole + produce + ' in ' + year
-
-    // visualize on map!
-    visualize(data);
-
-    // generate all tooltips set up by visualize function
-    $('[data-toggle="tooltip"]').tooltip();
-  });
+    // visualize!! :D
+    drawViz(data)
+  })
 });
+
+var drawViz = function (data) {
+  // clear any children of the map viz and top 10 list
+  map = document.getElementById('chart')
+  while (map.firstChild) {
+    map.removeChild(map.firstChild)
+  }
+  stats = document.getElementById('stats-body')
+  while (stats.firstChild) {
+    stats.removeChild(stats.firstChild)
+  }
+
+  // role of country in relation to the produce
+  var countryRole = {
+    'Import': ' Importers of ',
+    'Export': ' Exporters of ',
+    'Production': ' Producers of '
+  }[type]
+
+  var topHowMany = 10
+
+  // get the top 10 (ideally) importers/exporters/producers of a produce from a specific year
+  data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year)))
+  data.sort(function (a, b) { return b[type + ' Quantity'] - a[type + ' Quantity'] })
+  if (data.length < 10) {
+    topHowMany = data.length
+  }
+  data = data.slice(0, topHowMany)
+
+  // nitty gritty grammar details for single top country ^^;
+  if (topHowMany == 1) {
+    topHowMany = ''
+    countryRole = {
+      'Import': ' Importer of ',
+      'Export': ' Exporter of ',
+      'Production': ' Producer of '
+    }[type]
+  }
+
+  // debugging
+  console.log('Printing Top ' + topHowMany + countryRole + produce + ' in ' + year + '...')
+  console.log(data);
+
+  // set the header of the stats card
+  header = document.getElementById('stats-header')
+  header.innerHTML = 'Top ' + topHowMany + countryRole + produce + ' in ' + year
+
+  // visualize on map!
+  visualize(data);
+
+  // generate all tooltips set up by visualize function
+  $('[data-toggle="tooltip"]').tooltip();
+}
 
 var visualize = function (data) {
   const width = 1100;

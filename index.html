@@ -34,9 +34,10 @@
     <h3 class='mt-2 mb-3'>Worldview: Top Importers and Exporters</h3>
 
     <form class='form-inline'>
-      <select class='form-control'>
-        <option value='Importers'>Importers</option>
-        <option value='Importers'>Exporters</option>
+      <select class='form-control' id='role-select'>
+        <option value='Import'>Importers</option>
+        <option value='Export'>Exporters</option>
+        <option value='Production'>Producers</option>
       </select>
 
       <label for='produce-select'>&nbsp;&nbsp;of&nbsp;&nbsp;</label>
@@ -49,7 +50,7 @@
         <!-- Will be filled by js with set of years -->
       </select>
 
-      <button class='btn btn-dark ml-2' type='submit' onclick='updateViz()'><i class='fa fa-search'></i> Query</button>
+      <button class='btn btn-dark ml-2' type='button' id='query-button'><i class='fa fa-search'></i> Query</button>
 
       <button class='ml-auto btn btn-light' type='button' data-toggle='collapse' data-target='#stats'
         aria-expanded='true'>
