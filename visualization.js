@@ -1,6 +1,11 @@
 // global lookup table used to look up the location of the centroid of a country
 var locationLookup = {}
 
+// global variables to store the viz d3 selection, geoJSON map data and projection for redraws on query
+var svg = null
+var worldGeoJSON = require('./data/countries.json')
+var projection = d3.geoMercator().fitWidth(1100, worldGeoJSON).translate([550, 280])
+
 // value resulting from a fulfilled promise from the completion of d3.csv('data/relevant_data.csv)
 // basically the csv that is read as an object
 var fulfillmentValue = null
@@ -28,11 +33,31 @@ function updateViz() {
   console.log('Viz redrawn!')
 }
 
+// called whenever the user presses the toggle button
+function updateStatsToggle() {
+  var toggleButton = document.getElementById('toggle-stats-button')
+
+  if (toggleButton.innerHTML == 'Show Summary <i class="fa fa-chevron-down"></i>') {
+    // summary will be shown, so set button to 'hide summary'
+    toggleButton.innerHTML = 'Hide Summary <i class="fa fa-chevron-up"></i>'
+    toggleButton.setAttribute('class', 'ml-auto btn btn-danger')
+  }
+  else {
+    // summary will be hidden, so set button to 'show summary'
+    toggleButton.innerHTML = 'Show Summary <i class="fa fa-chevron-down"></i>'
+    toggleButton.setAttribute('class', 'ml-auto btn btn-success')
+  }
+}
+
 // document.ready handler -- this fxn is called when the dom is ready
 $(function () {
   // Add event listener so we can update type, produce and year according to the user's query
   queryButton = document.getElementById('query-button')
   queryButton.addEventListener('click', updateViz)
+
+  // Add event listener so we can update design of toggle button
+  toggleButton = document.getElementById('toggle-stats-button')
+  toggleButton.addEventListener('click', updateStatsToggle)
 
   // intialize the location lookup table
   d3.csv('data/countries_lookup.csv').then(function (data) {
@@ -87,7 +112,51 @@ $(function () {
     console.log('Printing fulfillment value of request to read relevanta_data.csv...')
     console.log(fulfillmentValue)
 
-    // visualize!! :D
+    // draw the map only once
+    const width = 1100;
+    const height = 530;
+
+    svg = d3.select('#chart')
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height)
+      .append('g')
+
+    // world map
+    var pathGenerator = d3.geoPath(projection)
+    var mapPalette = ['#a1c9f4',
+      '#ffb482',
+      '#8de5a1',
+      '#ff9f9b',
+      '#d0bbff',
+      '#debb9b',
+      '#fab0e4',
+      '#cfcfcf',
+      '#fffea3',
+      '#b9f2f0',
+      '#a1c9f4',
+      '#ffb482',
+      '#8de5a1',
+      '#ff9f9b',
+      '#d0bbff']
+
+    // draw the map based on the generated path for a Mercator projection
+    svg
+      .selectAll('countries')
+      .data(worldGeoJSON.features)
+      .enter()
+      .append('path')
+      .attr('d', pathGenerator) // d attribute defines the shape of the path
+      .style('stroke', 'white')
+      .style('fill', function (d, i) {
+        // randomly select color from palette
+        return mapPalette[Math.floor(Math.random() * mapPalette.length)]
+      })
+
+    // append a group element that will contain all non-map svg elts for easy removal
+    svg = svg.append('g').attr('id', 'map-elements')
+
+    // visualize data on map!! :D
     drawViz(data)
   })
 });
@@ -110,17 +179,19 @@ var drawViz = function (data) {
   data = data.slice(0, topHowMany)
 
   // clear any children of the map viz, top 10 list, popper storage
-  map = document.getElementById('chart')
-  while (map.firstChild) {
-    map.removeChild(map.firstChild)
-  }
-  stats = document.getElementById('stats-body')
-  while (stats.firstChild) {
-    stats.removeChild(stats.firstChild)
-  }
-  poppers = document.getElementById('poppers')
-  while (poppers.firstChild) {
-    poppers.removeChild(poppers.firstChild)
+  var mapElements = document.getElementById('map-elements');
+  if (mapElements != null) {
+    while (mapElements.firstChild) {
+      mapElements.removeChild(mapElements.firstChild)
+    }
+    var stats = document.getElementById('stats-body')
+    while (stats.firstChild) {
+      stats.removeChild(stats.firstChild)
+    }
+    var poppers = document.getElementById('poppers')
+    while (poppers.firstChild) {
+      poppers.removeChild(poppers.firstChild)
+    }
   }
 
   // role of country in relation to the produce
@@ -148,7 +219,7 @@ var drawViz = function (data) {
   header = document.getElementById('stats-header')
   header.innerHTML = 'Top ' + topHowMany + countryRole + produce + ' in ' + year
 
-  // visualize on map!
+  // visualize data on map!
   visualize(data);
 
   // generate all tooltips set up by visualize function
@@ -156,49 +227,6 @@ var drawViz = function (data) {
 }
 
 var visualize = function (data) {
-  const width = 1100;
-  const height = 600;
-
-  var svg = d3.select('#chart')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .append('g')
-
-  // Visualization Code:
-  // world map
-  var worldGeoJSON = require('./data/countries.json')
-  var projection = d3.geoMercator().fitWidth(1100, worldGeoJSON).translate([550, 280])
-  var pathGenerator = d3.geoPath(projection)
-  var mapPalette = ['#a1c9f4',
-    '#ffb482',
-    '#8de5a1',
-    '#ff9f9b',
-    '#d0bbff',
-    '#debb9b',
-    '#fab0e4',
-    '#cfcfcf',
-    '#fffea3',
-    '#b9f2f0',
-    '#a1c9f4',
-    '#ffb482',
-    '#8de5a1',
-    '#ff9f9b',
-    '#d0bbff']
-
-  // draw the map based on the generated path for a Mercator projection
-  svg
-    .selectAll('countries')
-    .data(worldGeoJSON.features)
-    .enter()
-    .append('path')
-    .attr('d', pathGenerator) // d attribute defines the shape of the path
-    .style('stroke', 'white')
-    .style('fill', function (d, i) {
-      // randomly select color from palette
-      return mapPalette[Math.floor(Math.random() * mapPalette.length)]
-    })
-
   // read dataset, add a circle for each element
   svg
     .selectAll('top-ten')
