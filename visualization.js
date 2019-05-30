@@ -1,3 +1,7 @@
+// *************************************************************************************
+// *                          © 2019 Roshini Saravanakumar                             *
+// *************************************************************************************
+
 // global lookup table used to look up the location of the centroid of a country
 var locationLookup = {}
 
@@ -114,7 +118,7 @@ $(function () {
 
     // draw the map only once
     const width = 1100;
-    const height = 530;
+    const height = 520;
 
     svg = d3.select('#chart')
       .append('svg')

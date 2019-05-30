@@ -1,4 +1,7 @@
-/* My styles will be in here :) */
+/**************************************************************************************
+  *                          © 2019 Roshini Saravanakumar                             *
+  ************************************************************************************* */
+  
 .navbar-dark {
   background: #00B0FF;
 }
@@ -34,7 +37,7 @@
 
 .card {
   z-index:2001;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .card .country-name {
@@ -47,4 +50,10 @@
 
 body {
   padding-top: 57px;
+}
+
+footer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 }
