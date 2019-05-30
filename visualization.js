@@ -168,7 +168,7 @@ $(function () {
 var drawViz = function (data) {
   // get the top 10 (ideally) importers/exporters/producers of a produce from a specific year
   var topHowMany = 10
-  data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year)))
+  data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year) && (row[type + ' Quantity'] > 0)))
   data.sort(function (a, b) { return b[type + ' Quantity'] - a[type + ' Quantity'] })
 
   // if there is no data available for this query, do not make any changes
