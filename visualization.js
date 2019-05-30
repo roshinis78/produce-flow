@@ -28,6 +28,7 @@ function updateViz() {
   console.log('Viz redrawn!')
 }
 
+// document.ready handler -- this fxn is called when the dom is ready
 $(function () {
   // Add event listener so we can update type, produce and year according to the user's query
   queryButton = document.getElementById('query-button')
@@ -92,7 +93,23 @@ $(function () {
 });
 
 var drawViz = function (data) {
-  // clear any children of the map viz and top 10 list
+  // get the top 10 (ideally) importers/exporters/producers of a produce from a specific year
+  var topHowMany = 10
+  data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year)))
+  data.sort(function (a, b) { return b[type + ' Quantity'] - a[type + ' Quantity'] })
+
+  // if there is no data available for this query, do not make any changes
+  if (data.length == 0) {
+    alert('There is no data available for this query!')
+    return
+  }
+
+  if (data.length < 10) {
+    topHowMany = data.length
+  }
+  data = data.slice(0, topHowMany)
+
+  // clear any children of the map viz, top 10 list, popper storage
   map = document.getElementById('chart')
   while (map.firstChild) {
     map.removeChild(map.firstChild)
@@ -101,6 +118,10 @@ var drawViz = function (data) {
   while (stats.firstChild) {
     stats.removeChild(stats.firstChild)
   }
+  poppers = document.getElementById('poppers')
+  while (poppers.firstChild) {
+    poppers.removeChild(poppers.firstChild)
+  }
 
   // role of country in relation to the produce
   var countryRole = {
@@ -108,16 +129,6 @@ var drawViz = function (data) {
     'Export': ' Exporters of ',
     'Production': ' Producers of '
   }[type]
-
-  var topHowMany = 10
-
-  // get the top 10 (ideally) importers/exporters/producers of a produce from a specific year
-  data = data.filter(row => ((row['Produce'] == produce) && (row['Year'] == year)))
-  data.sort(function (a, b) { return b[type + ' Quantity'] - a[type + ' Quantity'] })
-  if (data.length < 10) {
-    topHowMany = data.length
-  }
-  data = data.slice(0, topHowMany)
 
   // nitty gritty grammar details for single top country ^^;
   if (topHowMany == 1) {
@@ -146,7 +157,7 @@ var drawViz = function (data) {
 
 var visualize = function (data) {
   const width = 1100;
-  const height = 540;
+  const height = 600;
 
   var svg = d3.select('#chart')
     .append('svg')
@@ -175,6 +186,7 @@ var visualize = function (data) {
     '#ff9f9b',
     '#d0bbff']
 
+  // draw the map based on the generated path for a Mercator projection
   svg
     .selectAll('countries')
     .data(worldGeoJSON.features)
@@ -215,7 +227,10 @@ var visualize = function (data) {
       popper.setAttribute('data-placement', 'left')
       popper.setAttribute('title', d['Country'] + verb + parseInt(d[type + ' Quantity']) + ' ' + produce.toLowerCase())
       popper.setAttribute('class', 'my-tooltip')
-      document.body.appendChild(popper)
+
+      // add the popper with tooltip to a div so they can be easily removed when redrawing
+      popperDiv = document.getElementById('poppers')
+      popperDiv.appendChild(popper)
 
       // dynamically update the top 10 list of importer/exporters/producers
       var listElt = document.createElement('li')
