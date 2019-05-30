@@ -2,6 +2,8 @@
 
 ### By Roshini Saravanakumar
 
+ > Use `npm start` within your copy of the directory to view the visualization.
+ 
  > This page will be updated as I progress 📋
 
 ## Resources
