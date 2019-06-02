@@ -1,0 +1,36 @@
+/**************************************************************************************
+  *                          © 2019 Roshini Saravanakumar                             *
+  ************************************************************************************* */
+
+/* This file contains styles specific to index.html and index.js */ 
+
+/* Halve the padding for list items contained within the summary card */
+.card .list-group-item { 
+  padding: 6px 10px;
+}
+.card {
+  z-index:2001;
+  font-size: 15px;
+}
+.card .country-name {
+  font-size: 15px;
+}
+
+/* Popper numbers font style */
+.number-style {
+  font-family: Calibri;
+  font-size: 19px;
+}
+.my-tooltip:hover {
+  z-index: 2000;
+} 
+
+/* Only for extra small and small screens, scroll the map */
+@media (max-width: 768px) {
+  #chart {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

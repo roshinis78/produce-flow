@@ -1,0 +1,28 @@
+/**************************************************************************************
+  *                          © 2019 Roshini Saravanakumar                             *
+  ************************************************************************************* */
+  
+.navbar-dark {
+  background: #00B0FF;
+}
+.navbar-nav {
+  padding-top: 1px;
+}
+.navbar-brand {
+  margin-right: 10px;
+}
+.navbar {
+  border-bottom: 1px solid white;
+  z-index: 2002;
+}
+
+/* Since navbar is fixed top, scoot the body down */ 
+body {
+  padding-top: 57px;
+}
+
+footer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
