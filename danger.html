@@ -42,7 +42,41 @@
   </nav>
 
   <div class='container'>
-    <div id='bar-chart'></div>
+    <header>
+      <h3 class='mt-3 mb-3'>The Danger Zone</h3>
+      <p>
+        <strong>What is the Danger Zone?</strong> As explored in the worldview, many of our top producers for a given
+        produce are also its top exporters. Sure, this may be wonderful for the economy in the short-term. However, in
+        the long-term, countries who export a majority of the crops that they produce are doing so at the cost of <span
+          class='highlight'>deforestation</span>, <span class='highlight'> intensive water use</span>, and <span
+          class='highlight'>cheap labor</span>.
+      </p>
+
+      <p>
+        To investigate these potential environmental hazards, use the interactive visualization below to explore crops
+        that have a shockingly low percent consumption. <strong>Percent consumption</strong> refers to the percentage of
+        a crop that is actually consumed by a country (the percent of the crop yield that is <i>not</i> exported).
+      </p>
+
+      <form class='form-inline'>
+        <div class='form-group mr-2'>
+          <label class='mr-2' for='country-select'>Country:</label>
+          <select class='form-control' id='country-select'>
+            <!-- Options are populated with countries in danger.js -->
+          </select>
+        </div>
+
+        <button class='btn btn-dark' type='button'>View</button>
+
+        <div id='year-slider'>
+        </div>
+      </form>
+
+      <hr>
+    </header>
+
+    <div id='bar-chart'>
+    </div>
   </div>
 
   <!-- <footer class='bg-dark text-white pl-1 justify-content-center'>

@@ -34,3 +34,7 @@
     -webkit-overflow-scrolling: touch;
   }
 }
+
+.highlight {
+  color: #33ccff;
+}
