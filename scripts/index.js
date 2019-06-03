@@ -53,15 +53,42 @@ function updateStatsToggle() {
   }
 }
 
+// called whenever the option selected by the user in the produce select menu changes
+function updateYearOptions() {
+  // get all the years for which data is available for the given produce
+  var produceSelect = document.getElementById('produce-select')
+  var years = fulfillmentValue.filter(entry => (entry['Produce'] == produceSelect.value))
+  years = Array.from(new Set(years.map(entry => entry['Year'])))
+
+  // update the year select menu's options
+  var yearSelect = document.getElementById('year-select')
+  while (yearSelect.firstChild) {
+    yearSelect.removeChild(yearSelect.firstChild)
+  }
+  years.forEach(function (year, index) {
+    var option = document.createElement('option')
+    option.setAttribute('value', year)
+    option.innerHTML = year
+    if (index == 0) {
+      option.selected = true
+    }
+    yearSelect.appendChild(option)
+  })
+}
+
 // document.ready handler -- this fxn is called when the dom is ready
 $(function () {
   // Add event listener so we can update type, produce and year according to the user's query
-  queryButton = document.getElementById('query-button')
+  var queryButton = document.getElementById('query-button')
   queryButton.addEventListener('click', updateViz)
 
   // Add event listener so we can update design of toggle button
-  toggleButton = document.getElementById('toggle-stats-button')
+  var toggleButton = document.getElementById('toggle-stats-button')
   toggleButton.addEventListener('click', updateStatsToggle)
+
+  // Add event listener so we can update the year selection options
+  var produceSelect = document.getElementById('produce-select')
+  produceSelect.addEventListener('change', updateYearOptions)
 
   // intialize the location lookup table
   d3.csv('../data/countries_lookup.csv').then(function (data) {
@@ -173,7 +200,6 @@ var drawViz = function (data) {
 
   // if there is no data available for this query, do not make any changes
   if (data.length == 0) {
-    alert('There is no data available for this query!')
     return
   }
 
