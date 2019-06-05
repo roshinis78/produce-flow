@@ -1,8 +1,47 @@
 var country = null
 var year = null
-var readCSV = null // cache the csv once read
+var readCSV = null // cache the csv once read for redraws
 
 var sliding = false // whether the slider is sliding or not
+var percentScale = null // save the scale used for the percent axis globally for redraws
+
+var watching = new Set()
+
+// bar graph visualization dimensions
+const margin = { top: 10, right: 20, bottom: 30, left: 115 }
+const width = 1000
+const height = 400
+
+// bar graph configurations
+const dangerZoneThreshold = 20
+const bar = {
+  height: 7,
+  color: {
+    normal: '#ffd633',
+    dangerZone: '#ff3300',
+    watching: 'teal',
+    watchInDangerZone: 'purple'
+  }
+}
+
+// slider configurations
+const slider = {
+  margin: {
+    right: 20,
+    left: 20
+  },
+  width: null,
+  tickSize: 15,
+  toggler: {
+    lag: 10, // distance threshold only after which we shall move the toggler
+    radius: 6,
+    border: {
+      width: 2,
+      color: '#00B0FF'
+    },
+    fill: 'skyblue'
+  }
+}
 
 // this function is called whenever the view button is pressed
 function changeCountryView() {
@@ -12,9 +51,12 @@ function changeCountryView() {
   var years = Array.from(new Set((readCSV.filter(entry => (entry['Country'] == country))).map(row => row['Year'])))
   year = years[0]
 
+  // clear the record of produce being watched
+  watching.clear()
+
   // redraw the slider and the bar chart
-  drawYearSlider(years);
-  drawViz();
+  drawYearSlider(years)
+  drawViz()
 }
 
 // called only once when dom is ready
@@ -55,33 +97,20 @@ $(function () {
   })
 })
 
+// draw the year slider onto the page
+var yearIndex = 0
 function drawYearSlider(years) {
-  // add the year slider
-  var slider = {
-    margin: {
-      right: 20,
-      left: 20
-    },
-    width: null,
-    tickSize: 15
+  // remove previously drawn slider
+  sliderSVGElement = document.getElementById('slider-svg')
+  while (sliderSVGElement.firstChild) {
+    sliderSVGElement.removeChild(sliderSVGElement.firstChild)
   }
 
   // set svg width to width of containing div
   slider.width = document.getElementById('year-slider').clientWidth - slider.margin.left - slider.margin.right
 
+  // append an axis with a scale of the years to the svg 
   var sliderSVG = d3.select('#slider-svg')
-
-  sliderSVG
-    .on('mousemove', function (event) {
-      if (sliding == true) {
-        console.log('Sliding!')
-        var mouseX = (d3.mouse(this))[0]
-        if (mouseX > slider.margin.left && mouseX <= slider.width - 10)
-          d3.select('#slider-control').attr('cx', mouseX)
-      }
-    })
-
-  // axes
   yearScale = d3
     .scaleOrdinal()
     .domain(years)
@@ -97,26 +126,70 @@ function drawYearSlider(years) {
     .attr('id', 'slider-axis')
     .style('transform', 'translate(0%, 40%)')
 
-  // slider toggle 
+  // draw the slider toggle, a circle
   sliderAxisElement = document.getElementById('slider-axis')
   console.log(sliderAxisElement)
   sliderSVG
     .append('circle')
-    .attr('r', 9)
+    .attr('r', slider.toggler.radius)
     .attr('cx', function (year) {
       return yearScale(year)
     })
     .attr('cy', 20.5)
-    .style('fill', 'skyblue')
+    .style('fill', slider.toggler.fill)
+    .style('stroke', slider.toggler.border.color)
+    .style('stroke-width', slider.toggler.border.width)
     .on('mousedown', function () {
-      console.log('Starting to slide...')
       sliding = true
     })
+    .attr('id', 'slider-toggler')
+
+  sliderSVG
+    .on('mousemove', function () {
+      if (sliding) {
+        // get the x coordinate of the mouse relative to the svg
+        mouseX = (d3.mouse(this))[0]
+
+        var sliderToggler = d3.select('#slider-toggler')
+        var sliderTogglerX = parseFloat(sliderToggler.attr('cx'))
+        if ((mouseX > sliderTogglerX + slider.toggler.radius + slider.toggler.lag) && (yearIndex + 1 < years.length)) {
+          year = years[++yearIndex]
+          sliderToggler.attr('cx', yearScale(year))
+          updateBars()
+        }
+        else if ((mouseX < sliderTogglerX - slider.toggler.radius - slider.toggler.lag) && (yearIndex - 1 >= 0)) {
+          year = years[--yearIndex]
+          sliderToggler.attr('cx', yearScale(year))
+          updateBars()
+        }
+      }
+    })
     .on('mouseup', function () {
-      console.log('Not sliding anymore.')
       sliding = false
     })
-    .attr('id', 'slider-control')
+}
+
+function updateBars() {
+  var updatedData = readCSV.filter(entry => ((entry['Country'] == country) && (entry['Year'] == year)))
+  var barSelection = d3.selectAll('.bar').data(updatedData)
+
+  barSelection
+    .attr('width', function (d, i) {
+      return percentScale(d['Percent Consumed']) - margin.left
+    })
+    .attr('fill', function (d, i) {
+      var isBeingWatched = watching.has(d['Produce'])
+      if (d['Percent Consumed'] < dangerZoneThreshold) {
+        if (isBeingWatched) {
+          return bar.color.watchInDangerZone
+        }
+        return bar.color.dangerZone
+      }
+      else if (isBeingWatched) {
+        return bar.color.watching
+      }
+      return bar.color.normal
+    })
 }
 
 
@@ -137,10 +210,6 @@ function drawViz() {
 }
 
 function stackedBarVisualize(data) {
-  const margin = { top: 10, right: 20, bottom: 30, left: 115 }
-  const width = 1000
-  const height = 600
-
   var svg = d3.select('#bar-chart')
     .append('svg')
     .attr('width', width + margin.right + margin.left)
@@ -149,7 +218,7 @@ function stackedBarVisualize(data) {
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 
   // axes
-  var percentScale = d3
+  percentScale = d3
     .scaleLinear()
     .domain([0, 100])
     .range([margin.left, width])
@@ -172,16 +241,6 @@ function stackedBarVisualize(data) {
     .call(percentAxis)
     .attr('transform', 'translate(0,' + height + ')')
 
-  // bars in bar graph
-  var bar = {
-    height: 7,
-    color: {
-      normal: '#ffd633',
-      dangerZone: '#ff3300'
-    }
-  }
-
-  const dangerZoneThreshold = 20
   svg
     .selectAll('bars')
     .data(data)
@@ -201,5 +260,26 @@ function stackedBarVisualize(data) {
         return bar.color.dangerZone
       }
       return bar.color.normal
+    })
+    .attr('class', 'bar')
+    .on('click', function (d, i) {
+      if (watching.has(d['Produce'])) {
+        watching.delete(d['Produce'])
+        if (d['Percent Consumed'] < dangerZoneThreshold) {
+          this.setAttribute('fill', bar.color.dangerZone)
+        }
+        else {
+          this.setAttribute('fill', bar.color.normal)
+        }
+      }
+      else {
+        watching.add(d['Produce'])
+        if (d['Percent Consumed'] < dangerZoneThreshold) {
+          this.setAttribute('fill', bar.color.watchInDangerZone)
+        }
+        else {
+          this.setAttribute('fill', bar.color.watching)
+        }
+      }
     })
 }
