@@ -10,6 +10,8 @@ var sliding = false         // whether the year slider is sliding or not
 var percentScale = null     // save the scale used for the percent axis
 var produceScale = null     // save the scale used for the produce axis
 var watching = new Set()    // a set of all the produce that are currently being watched by the user
+var produceSet = null       // an array of all the produce that the country interacts with across the years
+var svg = null
 
 // ****************************************************************************************
 // CONSTANTS 
@@ -17,7 +19,6 @@ var watching = new Set()    // a set of all the produce that are currently being
 // bar graph visualization dimensions
 const margin = { top: 10, right: 20, bottom: 30, left: 115 }
 const width = 1000
-const height = 400
 
 // bar graph configurations
 const dangerZoneThreshold = 20
@@ -195,14 +196,13 @@ function drawYearSlider() {
 
 // update the widths of the bars to correspond to the percent consumption for the newly selected year
 function updateBars() {
-  // create a lookup table (key = produce name, value = percent consumed) for the updated data
   var updatedData = readCSV.filter(entry => ((entry['Country'] == selectedCountry)
     && (entry['Year'] == availableYears[yearIndex])))
+
+  // create a lookup table (key = produce name, value = percent consumed) for the updated data
   var percentConsumptionLookup = {}
   updatedData.forEach(entry => (percentConsumptionLookup[entry['Produce']] = entry['Percent Consumed']))
-  console.log(percentConsumptionLookup['42'])
 
-  var noDataAvailable = []
   d3
     .selectAll('.bar')
     .attr('width', function () {
@@ -210,10 +210,7 @@ function updateBars() {
       // to lookup the new percent consumption of this produce for the new year
       var percentConsumption = percentConsumptionLookup[this.id]
 
-      // if the produce name does not exist in the lookup table, we do not have data for this year
-      // for this produce, so mark this produce as 'no data available'
       if (percentConsumption == undefined) {
-        noDataAvailable.push(this.id)
         return 0
       }
       return percentScale(percentConsumptionLookup[this.id]) - margin.left
@@ -231,18 +228,95 @@ function updateBars() {
       }
       return bar.color.normal
     })
+    .on('click', function () {
+      if (watching.has(this.id)) {
+        watching.delete(this.id)
+        if (percentConsumptionLookup[this.id] < dangerZoneThreshold) {
+          this.setAttribute('fill', bar.color.dangerZone)
+        }
+        else {
+          this.setAttribute('fill', bar.color.normal)
+        }
+      }
+      else {
+        watching.add(this.id)
+        if (percentConsumptionLookup[this.id] < dangerZoneThreshold) {
+          this.setAttribute('fill', bar.color.watchInDangerZone)
+        }
+        else {
+          this.setAttribute('fill', bar.color.watching)
+        }
+      }
+    })
 
+  updateLabels(updatedData)
   console.log('Updated bars for ' + availableYears[yearIndex] + '!')
+}
+
+function updateLabels(data) {
+  // remove any old labels
+  d3
+    .selectAll('.label')
+    .remove()
+
+  // record the produce included in the data for the current year
+  var availableProduce = data.map(entry => entry['Produce'])
+
+  // create labels for data that is not available for this year
+  var labels = []
+  produceSet.forEach(function (produce) {
+    if (!availableProduce.includes(produce)) {
+      labels.push({
+        produce: produce,
+        text: label.noDataAvailable
+      })
+    }
+  })
+
+  // create labels for produce that have 0 percent consumption for this year
+  data.forEach(function (entry) {
+    if (entry['Percent Consumed'] == 0) {
+      labels.push({
+        produce: entry['Produce'],
+        text: label.zeroConsumption
+      })
+    }
+  })
+
+  // draw labels
+  svg
+    .selectAll('labels')
+    .data(labels)
+    .enter()
+    .append('text')
+    .text(function (d, i) {
+      return d['text']
+    })
+    .attr('x', margin.left + 5)
+    .attr('y', function (d, i) {
+      return produceScale(d['produce']) + 2
+    })
+    .attr('fill', function (d, i) {
+      if (d['text'] == label.zeroConsumption) {
+        return 'red'
+      }
+      return 'grey'
+    })
+    .attr('class', 'label')
 }
 
 // draw the bar graph for the newly selected country
 function drawBarChart() {
   // select the data relevant to this country and record all the produce included in this data
   var data = readCSV.filter(entry => (entry['Country'] == selectedCountry))
-  var produceSet = Array.from(new Set(data.map(entry => entry['Produce'])))
+  produceSet = Array.from(new Set(data.map(entry => entry['Produce'])))
 
   // then filter the data by the earliest available year by default
   data = data.filter(entry => (entry['Year'] == availableYears[0]))
+
+  // create a lookup table (key = produce name, value = percent consumed) for the updated data
+  var percentConsumptionLookup = {}
+  data.forEach(entry => (percentConsumptionLookup[entry['Produce']] = entry['Percent Consumed']))
 
   // remove any previously visualized data
   var viz = document.getElementById('bar-chart')
@@ -250,8 +324,9 @@ function drawBarChart() {
     viz.removeChild(viz.firstChild)
   }
 
+  var height = produceSet.length * 20
   // create an svg for the bar graph
-  var svg = d3.select('#bar-chart')
+  svg = d3.select('#bar-chart')
     .append('svg')
     .attr('width', width + margin.right + margin.left)
     .attr('height', height + margin.top + margin.bottom)
@@ -280,50 +355,38 @@ function drawBarChart() {
     .attr('transform', 'translate(0,' + height + ')')
 
   // bars
-  var labels = []
   svg
     .selectAll('bars')
-    .data(data)
+    .data(produceSet)
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('id', function (d, i) {
+    .attr('id', function (produce) {
       // set the bar's id to its produce name so we can do quick lookups on updates
-      return d['Produce']
+      return produce
     })
     .attr('x', margin.left)
-    .attr('y', function (d, i) {
-      return produceScale(d['Produce']) - (bar.height / 2)
+    .attr('y', function (produce) {
+      return produceScale(produce) - (bar.height / 2)
     })
-    .attr('width', function (d, i) {
-      // add label if necessary
-      if (d['Percent Consumed'] == 0) {
-        labels.push({
-          produce: d['Produce'],
-          text: label.zeroConsumption
-        })
+    .attr('width', function (produce) {
+      var percentConsumption = percentConsumptionLookup[produce]
+      if (percentConsumption == undefined) {
+        return 0
       }
-      if (d['Percent Consumed'] == undefined) {
-        labels.push({
-          produce: d['Produce'],
-          text: label.noDataAvailable
-        })
-      }
-
-      // return width
-      return percentScale(d['Percent Consumed']) - margin.left
+      return percentScale(percentConsumption) - margin.left
     })
     .attr('height', bar.height)
-    .attr('fill', function (d, i) {
-      if (d['Percent Consumed'] < dangerZoneThreshold) {
+    .attr('fill', function (produce) {
+      if (percentConsumptionLookup[produce] < dangerZoneThreshold) {
         return bar.color.dangerZone
       }
       return bar.color.normal
     })
-    .on('click', function (d, i) {
-      if (watching.has(d['Produce'])) {
-        watching.delete(d['Produce'])
-        if (d['Percent Consumed'] < dangerZoneThreshold) {
+    .on('click', function (produce) {
+      if (watching.has(produce)) {
+        watching.delete(produce)
+        if (percentConsumptionLookup[produce] < dangerZoneThreshold) {
           this.setAttribute('fill', bar.color.dangerZone)
         }
         else {
@@ -331,8 +394,8 @@ function drawBarChart() {
         }
       }
       else {
-        watching.add(d['Produce'])
-        if (d['Percent Consumed'] < dangerZoneThreshold) {
+        watching.add(produce)
+        if (percentConsumptionLookup[produce] < dangerZoneThreshold) {
           this.setAttribute('fill', bar.color.watchInDangerZone)
         }
         else {
@@ -341,22 +404,5 @@ function drawBarChart() {
       }
     })
 
-  svg
-    .selectAll('labels')
-    .data(labels)
-    .enter()
-    .append('text')
-    .text(function (d, i) {
-      return d['text']
-    })
-    .attr('x', margin.left + 2)
-    .attr('y', function (d, i) {
-      return produceScale(d['Produce'] - 10)
-    })
-    .attr('fill', function (d, i) {
-      if (d['text'] == label.zeroConsumption) {
-        return 'red'
-      }
-      return 'grey'
-    })
+  updateLabels(data)
 }
