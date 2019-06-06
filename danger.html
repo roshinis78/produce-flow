@@ -5,7 +5,7 @@
 
   <!-- Bootstrap -->
   <meta charset='utf-8'>
-  <meta name='viewport' contents='width=device-width initial-scale=1 shrink-to-fit=no'>
+  <meta name='viewport' content='width=device-width initial-scale=1 shrink-to-fit=no'>
   <link rel='stylesheet' href='node_modules/bootstrap/dist/css/bootstrap.min.css'>
 
   <!-- Font Awesome -->
@@ -58,21 +58,24 @@
         a crop that is actually consumed by a country (the percent of the crop yield that is <i>not</i> exported).
       </p>
 
+      <hr>
+
       <form class='form-inline'>
-        <div class='form-group mr-2'>
+        <div class='form-group mr-2 col-12 col-md-5'>
           <label class='mr-2' for='country-select'>Country:</label>
           <select class='form-control' id='country-select'>
             <!-- Options are populated with countries in danger.js -->
           </select>
         </div>
 
-        <button class='btn btn-dark' type='button'>View</button>
+        <button class='btn btn-dark mr-3 col-auto' type='button' id='view-button'>View</button>
 
-        <div id='year-slider'>
+        <div class='col-12 col-md' id='year-slider'>
+          <svg id='slider-svg'>
+          </svg>
         </div>
       </form>
 
-      <hr>
     </header>
 
     <div id='bar-chart'>

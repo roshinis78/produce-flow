@@ -1,12 +1,19 @@
-var country = null
-var year = null
-var readCSV = null // cache the csv once read for redraws
+// ****************************************************************************************
+// GLOBAL VARIABLES 
+// the following global variables are global so that they can be used across chart updates
+// ****************************************************************************************
+var selectedCountry = null  // the currently selected country
+var availableYears = null   // an array of the available years of data for the selected country
+var yearIndex = 0           // the index of the currently selected year in the above array
+var readCSV = null          // the cached object read from the csv on the initial page load
+var sliding = false         // whether the year slider is sliding or not
+var percentScale = null     // save the scale used for the percent axis
+var produceScale = null     // save the scale used for the produce axis
+var watching = new Set()    // a set of all the produce that are currently being watched by the user
 
-var sliding = false // whether the slider is sliding or not
-var percentScale = null // save the scale used for the percent axis globally for redraws
-
-var watching = new Set()
-
+// ****************************************************************************************
+// CONSTANTS 
+// ****************************************************************************************
 // bar graph visualization dimensions
 const margin = { top: 10, right: 20, bottom: 30, left: 115 }
 const width = 1000
@@ -43,20 +50,10 @@ const slider = {
   }
 }
 
-// this function is called whenever the view button is pressed
-function changeCountryView() {
-  var selectedCountry = document.getElementById('country-select').value
-  console.log('Switching view to ' + selectedCountry + '!')
-  country = selectedCountry
-  var years = Array.from(new Set((readCSV.filter(entry => (entry['Country'] == country))).map(row => row['Year'])))
-  year = years[0]
-
-  // clear the record of produce being watched
-  watching.clear()
-
-  // redraw the slider and the bar chart
-  drawYearSlider(years)
-  drawViz()
+// label constants
+var label = {
+  zeroConsumption: '!!! 0% CONSUMPTION !!!',
+  noDataAvailable: 'no data available for this year'
 }
 
 // called only once when dom is ready
@@ -69,38 +66,62 @@ $(function () {
     var viewButton = document.getElementById('view-button')
     viewButton.addEventListener('click', changeCountryView)
 
-    // populate the country selector options with the countries
-    var countries = Array.from(new Set(data.map(entry => entry['Country'])))
+    // populate the country selector with an alphabetical list of countries/regions as options
+    var countries = (Array.from(new Set(data.map(entry => entry['Country'])))).sort()
     var countrySelect = document.getElementById('country-select')
     countries.forEach(function (country, index) {
       var option = document.createElement('option')
       option.setAttribute('value', country)
       option.innerHTML = country;
+      // the first country in the list should be selected by default
       if (index == 0) {
         country.selected = true
+        selectedCountry = country
       }
       countrySelect.appendChild(option)
     })
 
-    // set the default values for the selected country and year
-    country = countries[0]
-    var years = Array.from(new Set((data.filter(entry => (entry['Country'] == country))).map(row => row['Year'])))
-    year = years[0]
+    // initialize the global array to contain the years that the default country has data for
+    updateAvailableYears()
 
-    console.log('Set default country to ' + country)
-    console.log('Set intial year to ' + year)
-
-    drawYearSlider(years)
-
-    // draw the visualization!
-    drawViz()
+    // draw the year slider and the bar chart
+    drawYearSlider()
+    drawBarChart()
   })
 })
 
+// ****************************************************************************************
+// UPDATE FUNCTIONS: to update the chart, slider, and global variables
+// ****************************************************************************************
+// this function updates the global array 'availableYears'
+function updateAvailableYears() {
+  var allEntriesForCountry = readCSV.filter(entry => (entry['Country'] == selectedCountry))
+  var allYears = allEntriesForCountry.map(entry => parseInt(entry['Year']))
+  availableYears = (Array.from(new Set(allYears))).sort()
+}
+
+// event handler for 'View' button, update the currently selected country if it has changed
+function changeCountryView() {
+  var countrySelectValue = document.getElementById('country-select').value
+  if (countrySelectValue != selectedCountry) {
+    selectedCountry = countrySelectValue
+    console.log('Switched view to ' + selectedCountry + '!')
+
+    // update the global array to contain the years that this country has data for
+    updateAvailableYears()
+
+    // clear the record of produce being watched
+    watching.clear()
+
+    // redraw the year slider and the bar chart
+    drawYearSlider()
+    drawBarChart()
+  }
+}
+
 // draw the year slider onto the page
-var yearIndex = 0
-function drawYearSlider(years) {
-  // remove previously drawn slider
+function drawYearSlider() {
+  // remove the previously drawn slider
   sliderSVGElement = document.getElementById('slider-svg')
   while (sliderSVGElement.firstChild) {
     sliderSVGElement.removeChild(sliderSVGElement.firstChild)
@@ -109,12 +130,12 @@ function drawYearSlider(years) {
   // set svg width to width of containing div
   slider.width = document.getElementById('year-slider').clientWidth - slider.margin.left - slider.margin.right
 
-  // append an axis with a scale of the years to the svg 
+  // create an axis with a scale of the available years
   var sliderSVG = d3.select('#slider-svg')
   yearScale = d3
     .scaleOrdinal()
-    .domain(years)
-    .range(d3.range(slider.margin.left, slider.width + 1, (slider.width + 1) / years.length))
+    .domain(availableYears)
+    .range(d3.range(slider.margin.left, slider.width + 1, (slider.width + 1) / availableYears.length))
 
   sliderAxis = d3
     .axisBottom(yearScale)
@@ -126,14 +147,13 @@ function drawYearSlider(years) {
     .attr('id', 'slider-axis')
     .style('transform', 'translate(0%, 40%)')
 
-  // draw the slider toggle, a circle
-  sliderAxisElement = document.getElementById('slider-axis')
-  console.log(sliderAxisElement)
+  // draw the slider toggler, a circle
   sliderSVG
     .append('circle')
     .attr('r', slider.toggler.radius)
-    .attr('cx', function (year) {
-      return yearScale(year)
+    .attr('cx', function () {
+      // the toggler starts at the first available year by default
+      return yearScale(availableYears[0])
     })
     .attr('cy', 20.5)
     .style('fill', slider.toggler.fill)
@@ -152,14 +172,18 @@ function drawYearSlider(years) {
 
         var sliderToggler = d3.select('#slider-toggler')
         var sliderTogglerX = parseFloat(sliderToggler.attr('cx'))
-        if ((mouseX > sliderTogglerX + slider.toggler.radius + slider.toggler.lag) && (yearIndex + 1 < years.length)) {
-          year = years[++yearIndex]
-          sliderToggler.attr('cx', yearScale(year))
+
+        // increment the currently selected year if the mouse is pulling the toggler to the right
+        if ((mouseX > sliderTogglerX + slider.toggler.radius + slider.toggler.lag)
+          && (yearIndex + 1 < availableYears.length)) {
+          sliderToggler.attr('cx', yearScale(availableYears[++yearIndex]))
           updateBars()
         }
-        else if ((mouseX < sliderTogglerX - slider.toggler.radius - slider.toggler.lag) && (yearIndex - 1 >= 0)) {
-          year = years[--yearIndex]
-          sliderToggler.attr('cx', yearScale(year))
+
+        // decrement the currently selected year if the mouse is pulling the toggler to the left
+        else if ((mouseX < sliderTogglerX - slider.toggler.radius - slider.toggler.lag)
+          && (yearIndex - 1 >= 0)) {
+          sliderToggler.attr('cx', yearScale(availableYears[--yearIndex]))
           updateBars()
         }
       }
@@ -169,17 +193,34 @@ function drawYearSlider(years) {
     })
 }
 
+// update the widths of the bars to correspond to the percent consumption for the newly selected year
 function updateBars() {
-  var updatedData = readCSV.filter(entry => ((entry['Country'] == country) && (entry['Year'] == year)))
-  var barSelection = d3.selectAll('.bar').data(updatedData)
+  // create a lookup table (key = produce name, value = percent consumed) for the updated data
+  var updatedData = readCSV.filter(entry => ((entry['Country'] == selectedCountry)
+    && (entry['Year'] == availableYears[yearIndex])))
+  var percentConsumptionLookup = {}
+  updatedData.forEach(entry => (percentConsumptionLookup[entry['Produce']] = entry['Percent Consumed']))
+  console.log(percentConsumptionLookup['42'])
 
-  barSelection
-    .attr('width', function (d, i) {
-      return percentScale(d['Percent Consumed']) - margin.left
+  var noDataAvailable = []
+  d3
+    .selectAll('.bar')
+    .attr('width', function () {
+      // use the bar's id (its produce name), 
+      // to lookup the new percent consumption of this produce for the new year
+      var percentConsumption = percentConsumptionLookup[this.id]
+
+      // if the produce name does not exist in the lookup table, we do not have data for this year
+      // for this produce, so mark this produce as 'no data available'
+      if (percentConsumption == undefined) {
+        noDataAvailable.push(this.id)
+        return 0
+      }
+      return percentScale(percentConsumptionLookup[this.id]) - margin.left
     })
-    .attr('fill', function (d, i) {
-      var isBeingWatched = watching.has(d['Produce'])
-      if (d['Percent Consumed'] < dangerZoneThreshold) {
+    .attr('fill', function () {
+      var isBeingWatched = watching.has(this.id)
+      if (percentConsumptionLookup[this.id] < dangerZoneThreshold) {
         if (isBeingWatched) {
           return bar.color.watchInDangerZone
         }
@@ -190,14 +231,18 @@ function updateBars() {
       }
       return bar.color.normal
     })
+
+  console.log('Updated bars for ' + availableYears[yearIndex] + '!')
 }
 
+// draw the bar graph for the newly selected country
+function drawBarChart() {
+  // select the data relevant to this country and record all the produce included in this data
+  var data = readCSV.filter(entry => (entry['Country'] == selectedCountry))
+  var produceSet = Array.from(new Set(data.map(entry => entry['Produce'])))
 
-function drawViz() {
-  // only select data relevant to the country and year in question
-  var data = readCSV.filter(entry => ((entry['Country'] == country) && (entry['Year'] == year)))
-  console.log('Printing data for ' + country + ' from ' + year)
-  console.log(data)
+  // then filter the data by the earliest available year by default
+  data = data.filter(entry => (entry['Year'] == availableYears[0]))
 
   // remove any previously visualized data
   var viz = document.getElementById('bar-chart')
@@ -205,11 +250,7 @@ function drawViz() {
     viz.removeChild(viz.firstChild)
   }
 
-  // visualize the data as a stacked bar graph!
-  stackedBarVisualize(data)
-}
-
-function stackedBarVisualize(data) {
+  // create an svg for the bar graph
   var svg = d3.select('#bar-chart')
     .append('svg')
     .attr('width', width + margin.right + margin.left)
@@ -217,41 +258,59 @@ function stackedBarVisualize(data) {
     .append('g')
     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 
-  // axes
+  // scales - saved globally 
   percentScale = d3
     .scaleLinear()
     .domain([0, 100])
     .range([margin.left, width])
-  var percentAxis = d3.axisBottom(percentScale)
 
-  var produceSet = Array.from(new Set(data.map(entry => (entry['Produce'].split(','))[0])))
-  var produceScale = d3
+  produceScale = d3
     .scaleOrdinal()
     .domain(produceSet)
     .range(d3.range(margin.top, height + 1, (height + 1 - margin.top) / produceSet.length))
-  var produceAxis = d3.axisLeft(produceScale)
 
+  // axes
   svg
     .append('g')
-    .call(produceAxis)
+    .call(d3.axisLeft(produceScale))
     .attr('transform', 'translate(' + margin.left + ',0)')
-
   svg
     .append('g')
-    .call(percentAxis)
+    .call(d3.axisBottom(percentScale))
     .attr('transform', 'translate(0,' + height + ')')
 
+  // bars
+  var labels = []
   svg
     .selectAll('bars')
     .data(data)
     .enter()
     .append('rect')
+    .attr('class', 'bar')
+    .attr('id', function (d, i) {
+      // set the bar's id to its produce name so we can do quick lookups on updates
+      return d['Produce']
+    })
     .attr('x', margin.left)
     .attr('y', function (d, i) {
-      var firstFewWords = ((d['Produce']).split(','))[0]
-      return produceScale(firstFewWords) - (bar.height / 2)
+      return produceScale(d['Produce']) - (bar.height / 2)
     })
     .attr('width', function (d, i) {
+      // add label if necessary
+      if (d['Percent Consumed'] == 0) {
+        labels.push({
+          produce: d['Produce'],
+          text: label.zeroConsumption
+        })
+      }
+      if (d['Percent Consumed'] == undefined) {
+        labels.push({
+          produce: d['Produce'],
+          text: label.noDataAvailable
+        })
+      }
+
+      // return width
       return percentScale(d['Percent Consumed']) - margin.left
     })
     .attr('height', bar.height)
@@ -261,7 +320,6 @@ function stackedBarVisualize(data) {
       }
       return bar.color.normal
     })
-    .attr('class', 'bar')
     .on('click', function (d, i) {
       if (watching.has(d['Produce'])) {
         watching.delete(d['Produce'])
@@ -281,5 +339,24 @@ function stackedBarVisualize(data) {
           this.setAttribute('fill', bar.color.watching)
         }
       }
+    })
+
+  svg
+    .selectAll('labels')
+    .data(labels)
+    .enter()
+    .append('text')
+    .text(function (d, i) {
+      return d['text']
+    })
+    .attr('x', margin.left + 2)
+    .attr('y', function (d, i) {
+      return produceScale(d['Produce'] - 10)
+    })
+    .attr('fill', function (d, i) {
+      if (d['text'] == label.zeroConsumption) {
+        return 'red'
+      }
+      return 'grey'
     })
 }
