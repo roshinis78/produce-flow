@@ -23,7 +23,7 @@ const width = 1000
 // bar graph configurations
 const dangerZoneThreshold = 20
 const bar = {
-  height: 7,
+  height: 2,
   color: {
     normal: '#ffd633',
     dangerZone: '#ff3300',
@@ -161,6 +161,7 @@ function drawYearSlider() {
     .style('stroke', slider.toggler.border.color)
     .style('stroke-width', slider.toggler.border.width)
     .on('mousedown', function () {
+      console.log('Heyo')
       sliding = true
     })
     .attr('id', 'slider-toggler')
@@ -168,6 +169,7 @@ function drawYearSlider() {
   sliderSVG
     .on('mousemove', function () {
       if (sliding) {
+        console.log('hi')
         // get the x coordinate of the mouse relative to the svg
         mouseX = (d3.mouse(this))[0]
 
@@ -324,7 +326,7 @@ function drawBarChart() {
     viz.removeChild(viz.firstChild)
   }
 
-  var height = produceSet.length * 20
+  var height = produceSet.length * 5
   // create an svg for the bar graph
   svg = d3.select('#bar-chart')
     .append('svg')
