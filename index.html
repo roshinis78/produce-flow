@@ -1,7 +1,3 @@
-<!--*************************************************************************************
-    *                          © 2019 Roshini Saravanakumar                             *
-    ************************************************************************************* -->
-
 <!DOCTYPE html>
 
 <head>
@@ -9,15 +5,15 @@
 
   <!-- Bootstrap -->
   <meta charset='utf-8'>
-  <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
+  <meta name='viewport' content='width=device-width initial-scale=1 shrink-to-fit=no'>
   <link rel='stylesheet' href='node_modules/bootstrap/dist/css/bootstrap.min.css'>
 
-  <!-- Font Awesome icon font pack -->
-  <link rel='stylesheet' href='node_modules/font-awesome/css/font-awesome.css'>
+  <!-- Font Awesome -->
+  <link rel='stylesheet' href='node_modules/font-awesome/css/font-awesome.min.css'>
 
-  <!-- My custom styles -->
+  <!-- My custom stylesheet -->
   <link rel='stylesheet' href='styles/common.css'>
-  <link rel='stylesheet' href='styles/index.css'>
+  <link rel='stylesheet' href='styles/danger.css'>
 </head>
 
 <body>
@@ -28,7 +24,7 @@
       <button class='navbar-toggler mr-2' data-toggle='collapse' data-target='#navigation-links'>
         <span class='navbar-toggler-icon'></span>
       </button>
-      <a class='navbar-brand mr-auto' href='#'>Produce Flow Analysis</a>
+      <a class='navbar-brand mr-auto' href='index.html'>Produce Flow Analysis</a>
 
       <div class='collapse navbar-collapse' id='navigation-links'>
         <ul class='navbar-nav mr-auto'>
@@ -37,7 +33,8 @@
               By Roshini Saravanakumar <span class='fa fa-github fa-lg'></span>
             </a>
           </li>
-          <li class='nav-item'><a class='nav-link' href='#'>Worldview</a></li>
+          <li class='nav-item'><a class='nav-link' href='#'>Introduction</a></li>
+          <li class='nav-item'><a class='nav-link' href='worldview.html'>Worldview</a></li>
           <li class='nav-item'><a class='nav-link' href='danger.html'>The Danger Zone</a></li>
         </ul>
       </div>
@@ -46,85 +43,31 @@
   </nav>
 
   <div class='container'>
-    <h3 class='mt-3 mb-3'>Worldview: Key Players</h3>
+    <header>
+      <h3 class='mt-3 mb-3'>Produce Flow</h3>
+    </header>
 
-    <p>
-      Welcome to the <span class='highlight'>worldview</span>! Of course, of course, I know you're excited to
-      start exploring the map below, but first let's set the stage.
-
-    </p>
-
-    <form class='form-inline'>
-      <select class='form-control' id='role-select'>
-        <option value='Import' selected>Importers</option>
-        <option value='Export'>Exporters</option>
-        <option value='Production'>Producers</option>
-      </select>
-
-      <div class='form-group'>
-        <label class='ml-2 mr-2' for='produce-select'>of</label>
-        <select class='form-control' id='produce-select'>
-          <!-- Will be filled by js with set of produce -->
-        </select>
-      </div>
-
-      <div class='form-group'>
-        <label class='ml-2 mr-2' for='year-select'>in</label>
-        <select class='form-control' id='year-select'>
-          <!-- Will be filled by js with set of years -->
-        </select>
-      </div>
-
-      <button class='btn btn-dark ml-2' type='button' id='query-button'><i class='fa fa-search'></i>
-        View</button>
-
-      <button class='ml-auto btn btn-danger d-none d-md-block' type='button' data-toggle='collapse' data-target='#stats'
-        aria-expanded='true' id='toggle-stats-button'>
-        Hide Summary <i class="fa fa-chevron-up"></i>
-      </button>
-    </form>
-
-    <hr class='mb-1'>
-
-    <!-- Content -->
-    <div class='row'>
-      <div class='col-12 col-md-7' id='chart'>
-        <!-- Visualization will go in here -->
-      </div>
-
-      <!-- Summary card -->
-      <div class='col-12 col-md'>
-        <div class='card collapse show' id='stats'>
-          <h5 class='card-header' id='stats-header'></h5>
-          <ul class='list-group' id='stats-body'>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div id='poppers'>
-      <!-- Poppers and tooltips -->
-    </div>
-
+    <p>Welcome to Produce Flow!</p>
   </div>
 
-  <footer class='bg-dark text-white pl-1 justify-content-center'>
-    <div class='pt-1 pb-1'>&copy; 2019 Roshini Saravanakumar</div>
+  <footer class='bg-dark text-white'>
+    <div class='container'>
+      <div class='row justify-content-center align-items-center'>
+        <div>&copy; 2019 Roshini Saravanakumar</div>
+      </div>
+    </div>
   </footer>
 
-  <!-- Bootstrap JS components -->
+  <!-- Bootstrap -->
   <script src='node_modules/jquery/dist/jquery.slim.min.js'></script>
   <script src='node_modules/popper.js/dist/umd/popper.min.js'></script>
   <script src='node_modules/bootstrap/dist/js/bootstrap.min.js'></script>
 
-  <!-- D3 -->
+  <!-- D3.js -->
   <script src='node_modules/d3/dist/d3.min.js'></script>
 
-  <!-- Tooltip.js -->
-  <script src='node_modules/tooltip.js/dist/umd/tooltip.min.js'></script>
-
   <!-- My js code -->
-  <script src="scripts/bundle.js"></script>
+  <script src='scripts/danger.js'></script>
 </body>
 
 </html>
