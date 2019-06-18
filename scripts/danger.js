@@ -23,7 +23,7 @@ const width = 1000
 // bar graph configurations
 const dangerZoneThreshold = 20
 const bar = {
-  height: 2,
+  height: 4,
   color: {
     normal: '#ffd633',
     dangerZone: '#ff3300',
@@ -326,7 +326,7 @@ function drawBarChart() {
     viz.removeChild(viz.firstChild)
   }
 
-  var height = produceSet.length * 5
+  var height = produceSet.length * 10
   // create an svg for the bar graph
   svg = d3.select('#bar-chart')
     .append('svg')
