@@ -23,7 +23,7 @@ const width = 1000
 // bar graph configurations
 const dangerZoneThreshold = 20
 const bar = {
-  height: 4,
+  height: 6,
   color: {
     normal: '#ffd633',
     dangerZone: '#ff3300',
@@ -63,9 +63,9 @@ $(function () {
     // cache the read csv for future redraws
     readCSV = data
 
-    // add an event listener to the view button so we can change views
-    var viewButton = document.getElementById('view-button')
-    viewButton.addEventListener('click', changeCountryView)
+    // add an event listener to the country select so we can change views
+    var countrySelect = document.getElementById('country-select')
+    countrySelect.addEventListener('change', changeCountryView)
 
     // populate the country selector with an alphabetical list of countries/regions as options
     var countries = (Array.from(new Set(data.map(entry => entry['Country'])))).sort()
@@ -90,6 +90,12 @@ $(function () {
     drawBarChart()
   })
 })
+
+// called when the window is resized
+$(window).resize((function (){
+  console.log('Redrawing year slider!')
+  drawYearSlider()
+}))
 
 // ****************************************************************************************
 // UPDATE FUNCTIONS: to update the chart, slider, and global variables
@@ -164,8 +170,8 @@ function drawYearSlider() {
     .append('circle')
     .attr('r', slider.toggler.radius)
     .attr('cx', function () {
-      // the toggler starts at the first available year by default
-      return yearScale(availableYears[0])
+      // the toggler's initial position is at the currently selected year
+      return yearScale(yearIndex)
     })
     .attr('cy', 20.5)
     .style('fill', slider.toggler.fill)
@@ -330,7 +336,7 @@ function updateLabels(data) {
     })
     .attr('x', margin.left + 5)
     .attr('y', function (d, i) {
-      return produceScale(d['produce']) + 2
+      return produceScale(d['produce']) + 4
     })
     .attr('fill', function (d, i) {
       if (d['text'] == label.zeroConsumption) {
@@ -360,7 +366,7 @@ function drawBarChart() {
     viz.removeChild(viz.firstChild)
   }
 
-  var height = produceSet.length * 10
+  var height = produceSet.length * bar.height * 2
   // create an svg for the bar graph
   svg = d3.select('#bar-chart')
     .append('svg')

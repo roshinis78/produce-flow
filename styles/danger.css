@@ -14,7 +14,7 @@
     “Segoe UI”, “Roboto”, “Oxygen”, “Ubuntu”, “Cantarell”,
     “Fira Sans”, “Droid Sans”, “Helvetica Neue”,
     sans-serif;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 #slider-svg {
@@ -31,4 +31,10 @@
   font-size: 10px;
   pointer-events: none;
   user-select: none;
+}
+
+#bar-chart {
+  max-height: 450px;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }

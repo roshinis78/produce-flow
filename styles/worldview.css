@@ -28,3 +28,9 @@
 .highlight {
   color: #33ccff;
 }
+
+@media (max-width: 768px){
+  #chart {
+    overflow-x: scroll;
+  }
+}

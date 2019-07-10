@@ -65,30 +65,44 @@ function updateYearOptions() {
   while (yearSelect.firstChild) {
     yearSelect.removeChild(yearSelect.firstChild)
   }
-  years.forEach(function (year, index) {
+
+  var maintainYear = false // whether or not we can select the previously selected year
+  years.forEach(function (localYear, index) {
     var option = document.createElement('option')
-    option.setAttribute('value', year)
-    option.innerHTML = year
-    if (index == 0) {
+    option.setAttribute('value', localYear)
+    option.innerHTML = localYear
+    // if the previously selected year has data, ensure that it is selected
+    if (localYear == year) {
+      console.log('Data available for ' + year + '! Maintaining previously selected year!')
+      maintainYear = true
       option.selected = true
     }
     yearSelect.appendChild(option)
   })
+
+  // if the previously selected year does not have data for the new produce, default to the first available year
+  if(!maintainYear){
+    console.log('No data available for ' + year + '! Defaulting to data from ' + yearSelect.firstChild.innerHTML)
+    yearSelect.firstChild.selected = true
+    year = yearSelect.firstChild.innerHTML
+  }
+
+  updateViz()
 }
 
 // document.ready handler -- this fxn is called when the dom is ready
 $(function () {
-  // Add event listener so we can update type, produce and year according to the user's query
-  var queryButton = document.getElementById('query-button')
-  queryButton.addEventListener('click', updateViz)
+  // Add event listeners so we can update type, produce and year according to the user's query
+  document.getElementById('role-select').addEventListener('change', updateViz)
+  document.getElementById('year-select').addEventListener('change', updateViz)
+  // Add event listener so we can update the year selection options and the visualization
+  var produceSelect = document.getElementById('produce-select')
+  // NOTE: UPDATE YEAR OPTIONS CALLS UPDATE VIZ
+  produceSelect.addEventListener('change', updateYearOptions)
 
   // Add event listener so we can update design of toggle button
   var toggleButton = document.getElementById('toggle-stats-button')
   toggleButton.addEventListener('click', updateStatsToggle)
-
-  // Add event listener so we can update the year selection options
-  var produceSelect = document.getElementById('produce-select')
-  produceSelect.addEventListener('change', updateYearOptions)
 
   // intialize the location lookup table
   d3.csv('../data/countries_lookup.csv').then(function (data) {
