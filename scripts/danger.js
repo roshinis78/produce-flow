@@ -148,6 +148,17 @@ function drawYearSlider() {
     .attr('id', 'slider-axis')
     .style('transform', 'translate(0%, 40%)')
 
+  var yearTicksXValues = []
+  console.log(d3.select('#slider-axis').selectAll('.tick'))
+  d3.select('#slider-axis')
+    .selectAll('.tick')
+    .nodes()
+    .forEach(function(tick, index){
+      console.log(tick)
+      yearTicksXValues.push((tick.getAttribute('transform').slice(10).split(','))[0])
+    })
+  console.log(yearTicksXValues) 
+
   // draw the slider toggler, a circle
   sliderSVG
     .append('circle')
@@ -161,7 +172,6 @@ function drawYearSlider() {
     .style('stroke', slider.toggler.border.color)
     .style('stroke-width', slider.toggler.border.width)
     .on('mousedown', function () {
-      console.log('Heyo')
       sliding = true
     })
     .attr('id', 'slider-toggler')
@@ -169,9 +179,10 @@ function drawYearSlider() {
   sliderSVG
     .on('mousemove', function () {
       if (sliding) {
-        console.log('hi')
+        console.log('mousemove')
+        console.log(this)
         // get the x coordinate of the mouse relative to the svg
-        mouseX = (d3.mouse(this))[0]
+        var mouseX = (d3.mouse(this))[0]
 
         var sliderToggler = d3.select('#slider-toggler')
         var sliderTogglerX = parseFloat(sliderToggler.attr('cx'))
@@ -193,6 +204,29 @@ function drawYearSlider() {
     })
     .on('mouseup', function () {
       sliding = false
+    })
+    // update currently selected year if it is clicked on on the axis
+    .on('mousedown', function(){
+      // calculate the spacing between the year axis ticks
+      var tickSpacing = parseFloat(yearTicksXValues[1]) - parseFloat(yearTicksXValues[0]) 
+
+      // x coordinate of mouse relative to the first tick
+      var mouseX = (d3.mouse(this))[0]
+      var leftmostTickX = parseFloat(yearTicksXValues[0])
+      var roundedX = mouseX - leftmostTickX
+      
+      // update the index of the currently selected year in the available years array
+      yearIndex = Math.floor(roundedX / tickSpacing)
+
+      // finish rounding mouseX to nearest yearScale tick
+      roundedX = Math.floor(roundedX / tickSpacing) * tickSpacing
+      roundedX += leftmostTickX
+
+      // update the position of the toggler
+      var sliderToggler = d3.select('#slider-toggler')
+      sliderToggler.attr('cx', roundedX)
+
+      updateBars()
     })
 }
 
