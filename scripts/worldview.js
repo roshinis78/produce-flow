@@ -18,7 +18,7 @@ var type = 'Import' // 'Import', 'Export', 'Production'
 var produce = 'Avocados'
 var year = '2012'
 
-// called whenever the user submits a query to update the viz
+// called whenever the user changes a select input to update the viz
 function updateViz() {
   var newType = document.getElementById('role-select').value
   var newProduce = document.getElementById('produce-select').value
@@ -44,12 +44,12 @@ function updateStatsToggle() {
   if (toggleButton.innerHTML == 'Show Summary <i class="fa fa-chevron-down"></i>') {
     // summary will be shown, so set button to 'hide summary'
     toggleButton.innerHTML = 'Hide Summary <i class="fa fa-chevron-up"></i>'
-    toggleButton.setAttribute('class', 'ml-auto btn btn-danger')
+    toggleButton.setAttribute('class', 'ml-auto btn btn-danger d-none d-md-block')
   }
   else {
     // summary will be hidden, so set button to 'show summary'
     toggleButton.innerHTML = 'Show Summary <i class="fa fa-chevron-down"></i>'
-    toggleButton.setAttribute('class', 'ml-auto btn btn-success')
+    toggleButton.setAttribute('class', 'ml-auto btn btn-success d-none d-md-block')
   }
 }
 
@@ -204,7 +204,19 @@ $(function () {
     // visualize data on map!! :D
     drawViz(data)
   })
-});
+})
+
+// when the window is resized to a medium-sized screen, show the summary card
+$(window).resize(function(){
+  if($(window).width() < 768){
+    $('#stats').attr('class', 'card collapse show mb-2 mb-md-0')
+
+    // summary will be shown, so set toggle button to 'hide summary'
+    var toggleButton = document.getElementById('toggle-stats-button')
+    toggleButton.innerHTML = 'Hide Summary <i class="fa fa-chevron-up"></i>'
+    toggleButton.setAttribute('class', 'ml-auto btn btn-danger d-none d-md-block')
+  }
+})
 
 var drawViz = function (data) {
   // get the top 10 (ideally) importers/exporters/producers of a produce from a specific year
