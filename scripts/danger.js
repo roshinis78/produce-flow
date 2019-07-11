@@ -18,7 +18,6 @@ var svg = null
 // ****************************************************************************************
 // bar graph visualization dimensions
 const margin = { top: 10, right: 20, bottom: 30, left: 115 }
-const width = 1000
 
 // bar graph configurations
 const dangerZoneThreshold = 20
@@ -95,6 +94,9 @@ $(function () {
 $(window).resize((function (){
   console.log('Redrawing year slider!')
   drawYearSlider()
+
+  console.log('Redrawing bar chart!')
+  drawBarChart()
 }))
 
 // ****************************************************************************************
@@ -349,6 +351,12 @@ function updateLabels(data) {
 
 // draw the bar graph for the newly selected country
 function drawBarChart() {
+  // remove any previously drawn bar chart
+  var barChart = document.getElementById('bar-chart')
+  while(barChart.firstChild){
+    barChart.removeChild(barChart.firstChild)
+  }
+
   // select the data relevant to this country and record all the produce included in this data
   var data = readCSV.filter(entry => (entry['Country'] == selectedCountry))
   produceSet = Array.from(new Set(data.map(entry => entry['Produce'])))
@@ -366,6 +374,7 @@ function drawBarChart() {
     viz.removeChild(viz.firstChild)
   }
 
+  var width = $('#bar-chart').parent().width() - margin.left - margin.right - 20
   var height = produceSet.length * bar.height * 2
   // create an svg for the bar graph
   svg = d3.select('#bar-chart')
