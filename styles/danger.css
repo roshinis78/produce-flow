@@ -52,3 +52,10 @@
   overflow-y: scroll;
   overflow-x: scroll;
 }
+
+@media (max-width: 768px){
+  #bar-chart {
+    max-height: 200px;
+    overflow-y: scroll;
+  }
+}
