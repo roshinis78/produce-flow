@@ -144,7 +144,7 @@ function drawYearSlider() {
   yearScale = d3
     .scaleOrdinal()
     .domain(availableYears)
-    .range(d3.range(slider.margin.left, slider.width + 1, (slider.width + 1) / availableYears.length))
+    .range(d3.range(slider.margin.left, (slider.width + 1), (slider.width - 10) / availableYears.length))
 
   sliderAxis = d3
     .axisBottom(yearScale)
@@ -179,13 +179,13 @@ function drawYearSlider() {
     .style('fill', slider.toggler.fill)
     .style('stroke', slider.toggler.border.color)
     .style('stroke-width', slider.toggler.border.width)
-    .on('mousedown', function () {
+    .on('mousedown touchstart', function () {
       sliding = true
     })
     .attr('id', 'slider-toggler')
 
   sliderSVG
-    .on('mousemove', function () {
+    .on('mousemove touchmove', function () {
       if (sliding) {
         console.log('mousemove')
         console.log(this)
@@ -210,17 +210,18 @@ function drawYearSlider() {
         }
       }
     })
-    .on('mouseup', function () {
+    .on('mouseup touchend', function () {
       sliding = false
     })
     // update currently selected year if it is clicked on on the axis
-    .on('mousedown', function(){
+    .on('mousedown touchstart', function(){
       // calculate the spacing between the year axis ticks
       var tickSpacing = parseFloat(yearTicksXValues[1]) - parseFloat(yearTicksXValues[0]) 
 
       // x coordinate of mouse relative to the first tick
       var mouseX = (d3.mouse(this))[0]
       var leftmostTickX = parseFloat(yearTicksXValues[0])
+      var rightmostTickX = parseFloat(yearTicksXValues[yearTicksXValues.length - 1])
       var roundedX = mouseX - leftmostTickX
       
       // update the index of the currently selected year in the available years array
@@ -229,6 +230,16 @@ function drawYearSlider() {
       // finish rounding mouseX to nearest yearScale tick
       roundedX = Math.floor(roundedX / tickSpacing) * tickSpacing
       roundedX += leftmostTickX
+
+      // round out of bounds values to eithe end
+      if(roundedX < leftmostTickX){
+        roundedX = leftmostTickX
+        yearIndex = 0
+      }
+      else if(roundedX > rightmostTickX){
+        roundedX = rightmostTickX
+        yearIndex = availableYears.length - 1
+      }
 
       // update the position of the toggler
       var sliderToggler = d3.select('#slider-toggler')
@@ -374,7 +385,7 @@ function drawBarChart() {
     viz.removeChild(viz.firstChild)
   }
 
-  var width = $('#bar-chart').parent().width() - margin.left - margin.right - 20
+  var width = $('#bar-chart').parent().width()
   var height = produceSet.length * bar.height * 2
   // create an svg for the bar graph
   svg = d3.select('#bar-chart')
