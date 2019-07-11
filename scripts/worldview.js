@@ -7,7 +7,7 @@ var locationLookup = {}
 
 // global variables to store the viz d3 selection, geoJSON map data and projection for redraws on query
 var svg = null
-var worldGeoJSON = require('./data/countries.json')
+var worldGeoJSON = require('../data/countries.json')
 var projection = d3.geoMercator().fitWidth(1100, worldGeoJSON).translate([550, 280])
 
 // value resulting from a fulfilled promise from the completion of d3.csv('../data/relevant_data.csv)
