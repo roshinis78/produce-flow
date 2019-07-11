@@ -47,15 +47,19 @@
  }
 }
 
-#bar-chart {
-  max-height: 450px;
+#scrollable-bar-chart {
+  max-height: 400px;
   overflow-y: scroll;
-  overflow-x: scroll;
+  overflow-x: hidden;
 }
 
-@media (max-width: 768px){
-  #bar-chart {
+@media (max-width: 768px) {
+  #scrollable-bar-chart {
     max-height: 200px;
+    min-width: 500px;
     overflow-y: scroll;
+  }
+  #bar-chart {
+    overflow-x: scroll;
   }
 }

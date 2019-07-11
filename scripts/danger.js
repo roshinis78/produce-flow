@@ -17,7 +17,7 @@ var svg = null
 // CONSTANTS 
 // ****************************************************************************************
 // bar graph visualization dimensions
-const margin = { top: 10, right: 20, bottom: 30, left: 115 }
+const margin = { top: 10, right: 20, bottom: 10, left: 140 }
 
 // bar graph configurations
 const dangerZoneThreshold = 20
@@ -363,9 +363,14 @@ function updateLabels(data) {
 // draw the bar graph for the newly selected country
 function drawBarChart() {
   // remove any previously drawn bar chart
-  var barChart = document.getElementById('bar-chart')
+  var barChart = document.getElementById('scrollable-bar-chart')
   while(barChart.firstChild){
     barChart.removeChild(barChart.firstChild)
+  }
+
+  var bottomAxis = document.getElementById('percent-axis-svg')
+  while(bottomAxis.firstChild){
+    bottomAxis.removeChild(bottomAxis.firstChild)
   }
 
   // select the data relevant to this country and record all the produce included in this data
@@ -379,21 +384,12 @@ function drawBarChart() {
   var percentConsumptionLookup = {}
   data.forEach(entry => (percentConsumptionLookup[entry['Produce']] = entry['Percent Consumed']))
 
-  // remove any previously visualized data
-  var viz = document.getElementById('bar-chart')
-  while (viz.firstChild) {
-    viz.removeChild(viz.firstChild)
+  var width = $('#scrollable-bar-chart').parent().width() - margin.left - margin.right
+  if(width < 340){
+    width = 340
   }
-
-  var width = $('#bar-chart').parent().width()
-  var height = produceSet.length * bar.height * 2
+  var height = (produceSet.length * bar.height * 2) + margin.bottom
   // create an svg for the bar graph
-  svg = d3.select('#bar-chart')
-    .append('svg')
-    .attr('width', width + margin.right + margin.left)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 
   // scales - saved globally 
   percentScale = d3
@@ -406,16 +402,20 @@ function drawBarChart() {
     .domain(produceSet)
     .range(d3.range(margin.top, height + 1, (height + 1 - margin.top) / produceSet.length))
 
-  // axes
+  // produce axis and bars
+  svg = d3.select('#scrollable-bar-chart')
+    .append('svg')
+    .attr('width', width + margin.right + margin.left)
+    .attr('height', height + margin.top)
+    .append('g')
+    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+
   svg
     .append('g')
     .call(d3.axisLeft(produceScale))
+    .attr('id', 'produce-axis')
     .attr('transform', 'translate(' + margin.left + ',0)')
-  svg
-    .append('g')
-    .call(d3.axisBottom(percentScale))
-    .attr('transform', 'translate(0,' + height + ')')
-
+  
   // bars
   svg
     .selectAll('bars')
@@ -467,4 +467,15 @@ function drawBarChart() {
     })
 
   updateLabels(data)
+
+  // percent axis
+  percentAxisSVG = d3
+    .select('#percent-axis-svg')
+    .append('svg')
+    .attr('width', width + margin.right)
+    .attr('height', 35)
+    .attr('transform', 'translate(' + margin.left + ',0)')
+    .append('g')
+    .call(d3.axisBottom(percentScale))
+
 }
