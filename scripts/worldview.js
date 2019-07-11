@@ -90,15 +90,49 @@ function updateYearOptions() {
   updateViz()
 }
 
+// event handler to update the selected role button on mobile/small screens
+var selectedRole = 'importer'
+function selectRole(newRole, listener){
+  // if the selected role has changed, update the button input(mobile) and option input(desktop)
+  if(newRole != selectedRole){
+    // unselect the previously selected role button and option
+    document.getElementById(selectedRole + '-button').setAttribute('class', 'btn btn-light')
+    if(listener == 'button-listener'){
+      document.getElementById(selectedRole +'-option').selected = false
+    }
+   
+    // select the new role button and option
+    selectedRole = newRole
+    document.getElementById(selectedRole + '-button').setAttribute('class', 'btn btn-primary')
+    if(listener == 'button-listener'){
+      document.getElementById(selectedRole + '-option').selected = true
+    }
+
+    // update the map visualization
+    updateViz()
+  }
+}
+
 // document.ready handler -- this fxn is called when the dom is ready
 $(function () {
   // Add event listeners so we can update type, produce and year according to the user's query
-  document.getElementById('role-select').addEventListener('change', updateViz)
+  document.getElementById('role-select').addEventListener('change', function(){
+    newRole = {
+      Import: 'importer',
+      Export: 'exporter',
+      Produce: 'producer'
+    }[document.getElementById('role-select').value]
+    selectRole(newRole, 'select-listener')
+  })
   document.getElementById('year-select').addEventListener('change', updateViz)
   // Add event listener so we can update the year selection options and the visualization
   var produceSelect = document.getElementById('produce-select')
   // NOTE: UPDATE YEAR OPTIONS CALLS UPDATE VIZ
   produceSelect.addEventListener('change', updateYearOptions)
+  // event listeners for the mobile role selection buttons
+  document.getElementById('importer-button').addEventListener('click', () => selectRole('importer', 'button-listener'))
+  document.getElementById('exporter-button').addEventListener('click', () => selectRole('exporter', 'button-listener'))
+  document.getElementById('producer-button').addEventListener('click', () => selectRole('producer', 'button-listener'))
 
   // Add event listener so we can update design of toggle button
   var toggleButton = document.getElementById('toggle-stats-button')
