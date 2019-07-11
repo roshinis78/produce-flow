@@ -7,7 +7,7 @@ var locationLookup = {}
 
 // global variables to store the viz d3 selection, geoJSON map data and projection for redraws on query
 var svg = null
-var worldGeoJSON = require('../data/countries.json')
+var worldGeoJSON = require('./data/countries.json')
 var projection = d3.geoMercator().fitWidth(1100, worldGeoJSON).translate([550, 280])
 
 // value resulting from a fulfilled promise from the completion of d3.csv('../data/relevant_data.csv)
@@ -105,7 +105,7 @@ $(function () {
   toggleButton.addEventListener('click', updateStatsToggle)
 
   // intialize the location lookup table
-  d3.csv('../data/countries_lookup.csv').then(function (data) {
+  d3.csv('./data/countries_lookup.csv').then(function (data) {
     data.forEach(function (country, index) {
       locationLookup[country.name] = { 'latitude': country.latitude, 'longitude': country.longitude, 'code': country.code }
     })
@@ -114,7 +114,7 @@ $(function () {
   });
 
   // fill the produce select element with produce options
-  d3.csv('../data/produce.csv').then(function (data) {
+  d3.csv('./data/produce.csv').then(function (data) {
     console.log('Printing produce set...')
     console.log(data)
     data.forEach(function (set) {
@@ -133,7 +133,7 @@ $(function () {
   });
 
   // fill the year select element with year options
-  d3.csv('../data/years.csv').then(function (data) {
+  d3.csv('./data/years.csv').then(function (data) {
     console.log('Printing year set...')
     console.log(data)
     data.forEach(function (set) {
@@ -152,7 +152,7 @@ $(function () {
   });
 
   // request to read the csv and save the read data for future redraws
-  d3.csv('../data/relevant_data.csv').then(function (data) {
+  d3.csv('./data/relevant_data.csv').then(function (data) {
     fulfillmentValue = data
     console.log('Printing fulfillment value of request to read relevanta_data.csv...')
     console.log(fulfillmentValue)
