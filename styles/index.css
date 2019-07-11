@@ -21,13 +21,3 @@ body {
 .special-link a {
     color: #00B0FF;
 }
-
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-footer {
-    position: absolute;
-    bottom: 0;
-}

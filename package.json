@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/roshinis78/produce-flow#readme",
   "dependencies": {
+    "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
     "d3": "^5.9.2",
     "font-awesome": "^4.7.0",
