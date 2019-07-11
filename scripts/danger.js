@@ -58,7 +58,7 @@ var label = {
 
 // called only once when dom is ready
 $(function () {
-  d3.csv('../data/percent_consumption.csv').then(function (data) {
+  d3.csv('./data/percent_consumption.csv').then(function (data) {
     // cache the read csv for future redraws
     readCSV = data
 
