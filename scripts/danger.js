@@ -87,11 +87,14 @@ $(function () {
     // draw the year slider and the bar chart
     drawYearSlider()
     drawBarChart()
+
+    // generate all tooltips set up by visualize function
+    $('[data-toggle="tooltip"]').tooltip();
   })
 })
 
 // called when the window is resized
-$(window).resize((function (){
+$(window).resize((function () {
   console.log('Redrawing year slider!')
   drawYearSlider()
 
@@ -161,11 +164,11 @@ function drawYearSlider() {
   d3.select('#slider-axis')
     .selectAll('.tick')
     .nodes()
-    .forEach(function(tick, index){
+    .forEach(function (tick, index) {
       console.log(tick)
       yearTicksXValues.push((tick.getAttribute('transform').slice(10).split(','))[0])
     })
-  console.log(yearTicksXValues) 
+  console.log(yearTicksXValues)
 
   // draw the slider toggler, a circle
   sliderSVG
@@ -214,16 +217,16 @@ function drawYearSlider() {
       sliding = false
     })
     // update currently selected year if it is clicked on on the axis
-    .on('mousedown touchstart', function(){
+    .on('mousedown touchstart', function () {
       // calculate the spacing between the year axis ticks
-      var tickSpacing = parseFloat(yearTicksXValues[1]) - parseFloat(yearTicksXValues[0]) 
+      var tickSpacing = parseFloat(yearTicksXValues[1]) - parseFloat(yearTicksXValues[0])
 
       // x coordinate of mouse relative to the first tick
       var mouseX = (d3.mouse(this))[0]
       var leftmostTickX = parseFloat(yearTicksXValues[0])
       var rightmostTickX = parseFloat(yearTicksXValues[yearTicksXValues.length - 1])
       var roundedX = mouseX - leftmostTickX
-      
+
       // update the index of the currently selected year in the available years array
       yearIndex = Math.floor(roundedX / tickSpacing)
 
@@ -232,11 +235,11 @@ function drawYearSlider() {
       roundedX += leftmostTickX
 
       // round out of bounds values to eithe end
-      if(roundedX < leftmostTickX){
+      if (roundedX < leftmostTickX) {
         roundedX = leftmostTickX
         yearIndex = 0
       }
-      else if(roundedX > rightmostTickX){
+      else if (roundedX > rightmostTickX) {
         roundedX = rightmostTickX
         yearIndex = availableYears.length - 1
       }
@@ -258,12 +261,47 @@ function updateBars() {
   var percentConsumptionLookup = {}
   updatedData.forEach(entry => (percentConsumptionLookup[entry['Produce']] = entry['Percent Consumed']))
 
+  var producedLookup = {}
+  updatedData.forEach(entry => (producedLookup[entry['Produce']] = entry['Production Quantity']))
+
+  var importedLookup = {}
+  updatedData.forEach(entry => (importedLookup[entry['Produce']] = entry['Import Quantity']))
+
+  var exportedLookup = {}
+  updatedData.forEach(entry => (exportedLookup[entry['Produce']] = entry['Export Quantity']))
+
+  // remove previous tooltips
+  var popperDiv = document.getElementById('poppers')
+  while (popperDiv.firstChild) {
+    popperDiv.removeChild(popperDiv.firstChild)
+  }
+
   d3
     .selectAll('.bar')
     .attr('width', function () {
       // use the bar's id (its produce name), 
       // to lookup the new percent consumption of this produce for the new year
       var percentConsumption = percentConsumptionLookup[this.id]
+
+      // position tooltip 
+      if (percentConsumptionLookup[this.id] != undefined) {
+        var popper = document.createElement('a')
+        new Popper(this, popper, {
+          placement: 'right',
+        })
+        popper.innerHTML = '<i class="fa fa-info-circle fa-xs"></i>'
+
+        // create the tooltip
+        popper.setAttribute('data-toggle', 'tooltip')
+        popper.setAttribute('data-placement', 'left')
+        popper.setAttribute('title', 'Production Quantity: ' + producedLookup[this.id]
+          + '\nImported Quantity: ' + importedLookup[this.id]
+          + '\nExported Quantity ' + exportedLookup[this.id])
+        popper.setAttribute('class', 'my-tooltip')
+
+        // add the popper with tooltip to a div so they can be easily removed when redrawing
+        popperDiv.appendChild(popper)
+      }
 
       if (percentConsumption == undefined) {
         return 0
@@ -364,12 +402,12 @@ function updateLabels(data) {
 function drawBarChart() {
   // remove any previously drawn bar chart
   var barChart = document.getElementById('scrollable-bar-chart')
-  while(barChart.firstChild){
+  while (barChart.firstChild) {
     barChart.removeChild(barChart.firstChild)
   }
 
   var bottomAxis = document.getElementById('percent-axis-svg')
-  while(bottomAxis.firstChild){
+  while (bottomAxis.firstChild) {
     bottomAxis.removeChild(bottomAxis.firstChild)
   }
 
@@ -384,8 +422,17 @@ function drawBarChart() {
   var percentConsumptionLookup = {}
   data.forEach(entry => (percentConsumptionLookup[entry['Produce']] = entry['Percent Consumed']))
 
-  var width = $('#scrollable-bar-chart').parent().width() - margin.left - margin.right
-  if(width < 340){
+  var producedLookup = {}
+  data.forEach(entry => (producedLookup[entry['Produce']] = entry['Production Quantity']))
+
+  var importedLookup = {}
+  data.forEach(entry => (importedLookup[entry['Produce']] = entry['Import Quantity']))
+
+  var exportedLookup = {}
+  data.forEach(entry => (exportedLookup[entry['Produce']] = entry['Export Quantity']))
+
+  var width = $('#scrollable-bar-chart').parent().width() - margin.left - margin.right - 100
+  if (width < 340) {
     width = 340
   }
   var height = (produceSet.length * bar.height * 2) + margin.bottom
@@ -415,7 +462,7 @@ function drawBarChart() {
     .call(d3.axisLeft(produceScale))
     .attr('id', 'produce-axis')
     .attr('transform', 'translate(' + margin.left + ',0)')
-  
+
   // bars
   svg
     .selectAll('bars')
@@ -429,6 +476,27 @@ function drawBarChart() {
     })
     .attr('x', margin.left)
     .attr('y', function (produce) {
+      // position tooltip 
+      if (percentConsumptionLookup[produce] != undefined) {
+        var popper = document.createElement('a')
+        new Popper(this, popper, {
+          placement: 'right',
+        })
+        popper.innerHTML = '<i class="fa fa-info-circle fa-xs"></i>'
+
+        // create the tooltip
+        popper.setAttribute('data-toggle', 'tooltip')
+        popper.setAttribute('data-placement', 'left')
+        popper.setAttribute('title', 'Production Quantity: ' + producedLookup[produce]
+          + '\nImported Quantity: ' + importedLookup[produce]
+          + '\nExported Quantity ' + exportedLookup[produce])
+        popper.setAttribute('class', 'my-tooltip')
+
+        // add the popper with tooltip to a div so they can be easily removed when redrawing
+        popperDiv = document.getElementById('poppers')
+        popperDiv.appendChild(popper)
+      }
+
       return produceScale(produce) - (bar.height / 2)
     })
     .attr('width', function (produce) {
