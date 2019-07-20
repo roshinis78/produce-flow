@@ -288,20 +288,35 @@ function updateBars() {
         var popper = document.createElement('a')
         new Popper(this, popper, {
           placement: 'right',
+          modifiers: {
+            preventOverflow: {
+              enabled: true,
+              boundariesElement: document.getElementById('scrollable-bar-chart')
+            },
+            hide: {
+              enabled: true
+            },
+            flip: {
+              enabled: false
+            }
+          }
         })
         popper.innerHTML = '<i class="fa fa-info-circle fa-xs"></i>'
 
         // create the tooltip
         popper.setAttribute('data-toggle', 'tooltip')
         popper.setAttribute('data-placement', 'left')
-        popper.setAttribute('title', 'Production Quantity: ' + producedLookup[this.id]
-          + '\nImported Quantity: ' + importedLookup[this.id]
-          + '\nExported Quantity ' + exportedLookup[this.id])
+        popper.setAttribute('data-html', 'true')
+        popper.setAttribute('title', 'Produced ' + producedLookup[this.id] + ' ' + this.id
+          + '<br>Imported ' + importedLookup[this.id] + ' ' + this.id
+          + '<br>Exported ' + exportedLookup[this.id] + ' ' + this.id)
         popper.setAttribute('class', 'my-tooltip')
 
         // add the popper with tooltip to a div so they can be easily removed when redrawing
+        popperDiv = document.getElementById('poppers')
         popperDiv.appendChild(popper)
       }
+
 
       if (percentConsumption == undefined) {
         return 0
@@ -341,6 +356,8 @@ function updateBars() {
         }
       }
     })
+
+  $('[data-toggle="tooltip"]').tooltip();
 
   updateLabels(updatedData)
   console.log('Updated bars for ' + availableYears[yearIndex] + '!')
@@ -431,7 +448,7 @@ function drawBarChart() {
   var exportedLookup = {}
   data.forEach(entry => (exportedLookup[entry['Produce']] = entry['Export Quantity']))
 
-  var width = $('#scrollable-bar-chart').parent().width() - margin.left - margin.right - 100
+  var width = $('#scrollable-bar-chart').parent().width() - margin.left - margin.right - 50
   if (width < 340) {
     width = 340
   }
@@ -481,15 +498,29 @@ function drawBarChart() {
         var popper = document.createElement('a')
         new Popper(this, popper, {
           placement: 'right',
+          modifiers: {
+            preventOverflow: {
+              enabled: false,
+              boundariesElement: document.getElementById('scrollable-bar-chart')
+            },
+            hide: {
+              enabled: true
+            },
+            flip: {
+              enabled: false
+            }
+          }
         })
         popper.innerHTML = '<i class="fa fa-info-circle fa-xs"></i>'
 
         // create the tooltip
         popper.setAttribute('data-toggle', 'tooltip')
         popper.setAttribute('data-placement', 'left')
-        popper.setAttribute('title', 'Production Quantity: ' + producedLookup[produce]
-          + '\nImported Quantity: ' + importedLookup[produce]
-          + '\nExported Quantity ' + exportedLookup[produce])
+        popper.setAttribute('data-html', 'true')
+        popper.setAttribute('title', 'Produced ' + producedLookup[produce] + ' ' + produce
+          + '<br>Imported ' + importedLookup[produce] + ' ' + produce
+          + '<br>Exported ' + exportedLookup[produce] + ' ' + produce)
+
         popper.setAttribute('class', 'my-tooltip')
 
         // add the popper with tooltip to a div so they can be easily removed when redrawing
@@ -533,6 +564,8 @@ function drawBarChart() {
         }
       }
     })
+
+  $('[data-toggle="tooltip"]').tooltip();
 
   updateLabels(data)
 

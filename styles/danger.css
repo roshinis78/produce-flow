@@ -63,3 +63,11 @@
     overflow-x: scroll;
   }
 }
+
+.my-tooltip {
+  font-size: 12px;
+}
+
+.tooltip-inner {
+  font-size: 12px;
+}
